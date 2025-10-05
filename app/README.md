@@ -1,50 +1,133 @@
-# Welcome to your Expo app 👋
+# Privy + Expo Starter
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+This example showcases how to get started using Privy's Expo SDK inside an Expo React Native application.
 
-## Get started
+## Getting Started
 
-1. Install dependencies
-
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+### 1. Clone the Project
 
 ```bash
-npm run reset-project
+mkdir -p privy-expo-starter && curl -L https://github.com/privy-io/privy-examples/archive/main.tar.gz | tar -xz --strip=2 -C privy-expo-starter privy-examples-main/privy-expo-starter && cd privy-expo-starter
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### 2. Install Dependencies
 
-## Learn more
+```bash
+npm install
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+### 3. Configure Environment
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+Update the `app.json` file with your Privy app credentials:
 
-## Join the community
+```json
+{
+  "expo": {
+    "extra": {
+      "privyAppId": "your_app_id_here",
+      "privyClientId": "your_client_id_here",
+      "passkeyAssociatedDomain": "https://your-associated-domain.com"
+    },
+    "ios": {
+      "bundleIdentifier": "com.yourcompany.yourapp",
+      "associatedDomains": ["webcredentials:your-associated-domain.com"]
+    },
+    "android": {
+      "package": "com.yourcompany.yourapp"
+    }
+  }
+}
+```
 
-Join our community of developers creating universal apps.
+**Important:**
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- Configure an app client in your [Privy Dashboard](https://dashboard.privy.io/apps?page=settings&setting=clients)
+- Add 'exp' to Allowed app URL schemas in the mobile client in your [Privy Dashboard](https://dashboard.privy.io/apps?page=settings&setting=clients)
+- For Expo Go development, add `host.exp.Exponent` to Allowed app identifiers in your Dashboard
+- For iOS passkey support, configure the `associatedDomains` and `passkeyAssociatedDomain`
+
+### 4. Start Development Server
+
+```bash
+npm start
+```
+
+This will start the Expo development server. You can then:
+
+- Press `i` for iOS simulator
+- Press `a` for Android emulator
+- Scan QR code with Expo Go app on your device
+
+## Core Functionality
+
+### 1. Login with Privy
+
+Login or sign up using Privy's pre-built modals optimized for mobile.
+
+[`app/index.tsx`](./app/index.tsx)
+
+```tsx
+import { usePrivy } from "@privy-io/expo";
+const { user } = usePrivy();
+// User is automatically shown LoginScreen if not authenticated
+```
+
+### 2. Create Multi-Chain Wallets
+
+Programmatically create embedded wallets for multiple blockchains. Supports Ethereum, Solana, Bitcoin, and more.
+
+[`components/userManagement/Wallets.tsx`](./components/userManagement/Wallets.tsx)
+
+```tsx
+import {
+  useEmbeddedEthereumWallet,
+  useEmbeddedSolanaWallet,
+} from "@privy-io/expo";
+import { useCreateWallet } from "@privy-io/expo/extended-chains";
+
+const { create: createEthereumWallet } = useEmbeddedEthereumWallet();
+const { create: createSolanaWallet } = useEmbeddedSolanaWallet();
+const { createWallet } = useCreateWallet();
+
+// Create Ethereum wallet
+createEthereumWallet({ createAdditional: true });
+
+// Create Solana wallet
+createSolanaWallet({ createAdditional: true, recoveryMethod: "privy" });
+
+// Create Bitcoin/other chain wallets
+createWallet({ chainType: "bitcoin-segwit" });
+```
+
+### 3. Send Transactions
+
+Send transactions on EVM-compatible chains with native mobile UX.
+
+[`components/walletActions/EVMWalletActions.tsx`](./components/walletActions/EVMWalletActions.tsx)
+
+```tsx
+import { useEmbeddedEthereumWallet } from "@privy-io/expo";
+
+const { wallets } = useEmbeddedEthereumWallet();
+const wallet = wallets?.[0];
+const provider = await wallet?.getProvider?.();
+
+// Sign and send transaction
+const response = await provider.request({
+  method: "eth_sendTransaction",
+  params: [
+    {
+      from: wallet.address,
+      to: "0x0000000000000000000000000000000000000000",
+      value: "1",
+    },
+  ],
+});
+```
+
+## Relevant Links
+
+- [Privy Dashboard](https://dashboard.privy.io)
+- [Privy Documentation](https://docs.privy.io)
+- [Expo SDK](https://www.npmjs.com/package/@privy-io/expo)
+- [Expo Documentation](https://docs.expo.dev/)

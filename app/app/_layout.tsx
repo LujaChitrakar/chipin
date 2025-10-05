@@ -1,27 +1,38 @@
-import { View, Text } from 'react-native';
-import React from 'react';
-import { Stack } from 'expo-router';
-import colors from "@/assets/colors";
+import Constants from "expo-constants";
+import { Stack } from "expo-router";
+import { PrivyProvider } from "@privy-io/expo";
+import { PrivyElements } from "@privy-io/expo/ui";
+import {
+  Inter_400Regular,
+  Inter_500Medium,
+  Inter_600SemiBold,
+} from "@expo-google-fonts/inter";
+import { useFonts } from "expo-font";
+import { useColorScheme } from "react-native";
 
-const Layout = () => {
+export default function RootLayout() {
+  useFonts({
+    Inter_400Regular,
+    Inter_500Medium,
+    Inter_600SemiBold,
+  });
+  const colorScheme = useColorScheme() ?? "dark";
   return (
-    <Stack
-      screenOptions={{
-        headerStyle: {
-          backgroundColor: colors.primary,
+    <PrivyProvider
+      appId={Constants.expoConfig?.extra?.privyAppId}
+      clientId={Constants.expoConfig?.extra?.privyClientId}
+      config={{
+        embedded: {
+          solana: {
+            createOnLogin: "users-without-wallets",
+          },
         },
-        headerTintColor: colors.white,
-        headerTitleStyle: {
-          fontWeight: 'bold',
-        },
-        
       }}
     >
-      <Stack.Screen name='auth/login' options={{ headerShown: false }} />
-      <Stack.Screen name='auth/signup' options={{ headerShown: false }} />
-      <Stack.Screen name='tabs' options={{ headerShown: false }} />
-    </Stack>
+      <Stack>
+        <Stack.Screen name="index" />
+      </Stack>
+      <PrivyElements config={{ appearance: { colorScheme } }} />
+    </PrivyProvider>
   );
-};
-
-export default Layout;
+}
