@@ -1,44 +1,76 @@
-import { SafeAreaViewBase, Text, View } from "react-native";
-import Constants from "expo-constants";
-import LoginScreen from "@/components/LoginScreen";
-import { usePrivy } from "@privy-io/expo";
-import { UserScreen } from "@/components/UserScreen";
+import { useEffect } from 'react';
+import { Text, View } from 'react-native';
+import Constants from 'expo-constants';
+import { usePrivy } from '@privy-io/expo';
+import { useRouter, Stack } from 'expo-router';
+import colors from '@/assets/colors';
+import LoadingScreen from '@/components/splash/LoadingScreen';
 
 export default function Index() {
-  const { user } = usePrivy();
+  const router = useRouter();
+  const { user, isReady: ready } = usePrivy(); // "ready" tells when Privy has finished initializing
+
+  // ✅ Navigate only after Privy is ready
+  useEffect(() => {
+    if (!ready) return;
+
+    if (user) {
+      // @ts-ignore
+      router.replace('/tabs');
+    } else {
+      router.replace('/auth/login');
+    }
+  }, [user, ready]);
+
+  // ✅ Show splash/loading until Privy is ready
+  if (!ready) {
+    return <LoadingScreen />;
+  }
+
+  // ✅ Validate Privy IDs
   if ((Constants.expoConfig?.extra?.privyAppId as string).length !== 25) {
     return (
-      <SafeAreaViewBase>
-        <View
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <Text>You have not set a valid `privyAppId` in app.json</Text>
-        </View>
-      </SafeAreaViewBase>
+      <View
+        style={{
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100%',
+        }}
+      >
+        <Text>You have not set a valid `privyAppId` in app.json</Text>
+      </View>
     );
   }
+
   if (
     !(Constants.expoConfig?.extra?.privyClientId as string).startsWith(
-      "client-"
+      'client-'
     )
   ) {
     return (
-      <SafeAreaViewBase>
-        <View
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <Text>You have not set a valid `privyClientId` in app.json</Text>
-        </View>
-      </SafeAreaViewBase>
+      <View
+        style={{
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100%',
+        }}
+      >
+        <Text>You have not set a valid `privyClientId` in app.json</Text>
+      </View>
     );
   }
-  return !user ? <LoginScreen /> : <UserScreen />;
+  return (
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
+      <Stack
+        screenOptions={{
+          headerStyle: { backgroundColor: colors.primary },
+          headerTintColor: colors.white,
+          headerTitleStyle: { fontWeight: 'bold' },
+        }}
+      >
+        <Stack.Screen name='auth/login' options={{ headerShown: false }} />
+        <Stack.Screen name='tabs' options={{ headerShown: false }}  />
+      </Stack>
+    </View>
+  );
 }

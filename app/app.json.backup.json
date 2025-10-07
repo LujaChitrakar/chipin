@@ -31,11 +31,10 @@
       "package": "com.chipin.app"
     },
     "extra": {
-
-      "privyAppId": "cmgf4iucb018ll80dsbkmcspc",
-      "privyClientId": "client-WY6RaX9RVqTx1ncqj9U1pruwhqCyjDhzmBXufNnfLR8Y8",
+      "privyAppId": "cmg9lxhud013ejp0c7k4nd2u5",
+      "privyClientId": "client-WY6RRYiZKpzRffCRqsZWnFfKYkvcGSqD4ihHpTerAZBt3",
       
-      "passkeyAssociatedDomain": "https://chippin.app",
+      "passkeyAssociatedDomain": "https://example.com",
       "router": {},
       "eas": {
         "projectId": "ad338fd6-3ac7-407f-bfa9-e7065bf77ed2"

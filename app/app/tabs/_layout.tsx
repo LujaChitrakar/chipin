@@ -1,0 +1,42 @@
+import { View, Text } from 'react-native';
+import React from 'react';
+import { Tabs } from 'expo-router';
+import TabBar from '../../components/navigation/TabBar';
+import colors from '@/assets/colors';
+
+const TabLayout = () => {
+  return (
+    <Tabs tabBar={(props) => <TabBar {...props} />}>
+      <Tabs.Screen
+        name='groups/index'
+        options={{
+          title: 'Groups',
+          headerShown: false,
+        }}
+      />
+      <Tabs.Screen
+        name='crypto/index'
+        options={{
+          title: 'Crypto',
+          headerShown: false,
+        }}
+      />
+      <Tabs.Screen
+        name='friends/index'
+        options={{
+          title: 'Friends',
+          headerShown: false,
+        }}
+      />
+      <Tabs.Screen
+        name='account/index'
+        options={{
+          title: 'Account',
+          headerShown: false,
+        }}
+      />
+    </Tabs>
+  );
+};
+
+export default TabLayout;

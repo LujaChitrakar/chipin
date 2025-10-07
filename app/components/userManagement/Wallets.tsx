@@ -1,6 +1,7 @@
 import { useEmbeddedSolanaWallet, usePrivy } from "@privy-io/expo";
 import { View, Text, Button } from "react-native";
 import { useState } from "react";
+import GlobalStyles from "@/assets/global.styles";
 
 export default function Wallets() {
   const [error, setError] = useState<string | null>(null);
@@ -19,14 +20,7 @@ export default function Wallets() {
   };
   return (
     <View
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: 10,
-        borderWidth: 1,
-        borderColor: "black",
-        padding: 10,
-      }}
+      style={GlobalStyles.screenContainer}
     >
       <Text>Wallets</Text>
 
