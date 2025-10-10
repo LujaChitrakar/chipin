@@ -50,8 +50,8 @@ const colors = {
   },
 
   buttonBackground: {
-    DEFAULT: '#272e38',
-    hover: '#313a47',
+    DEFAULT: '#191c21',
+    hover: '#21252c',
     active: '#1d232b',
   },
 
