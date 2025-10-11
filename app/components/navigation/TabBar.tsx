@@ -61,6 +61,8 @@ const TabBar = ({ state, descriptors, navigation }: TabBarProps) => {
   );
 };
 
+// colors.primary
+
 const styles = StyleSheet.create({
   tabbar: {
     position: 'absolute',

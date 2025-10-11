@@ -1,7 +1,6 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { axiosInstance } from './apiConstants';
 
-// Create Group
 export const useCreateGroup = () => {
   return useMutation({
     mutationFn: async (groupData: any) => {
@@ -11,18 +10,30 @@ export const useCreateGroup = () => {
   });
 };
 
-// Get My Groups
-export const useGetMyGroups = () => {
+export const useGetMyGroups = ({
+  page,
+  limit,
+  q,
+}: {
+  page: number;
+  limit: number;
+  q: string;
+}) => {
   return useQuery({
-    queryKey: ['my-groups'],
+    queryKey: ['my-groups', page, limit, q],
     queryFn: async () => {
-      const response = await axiosInstance.get(`/group/my-groups`);
+      const response = await axiosInstance.get(`/group/my-groups`, {
+        params: {
+          page,
+          limit,
+          q,
+        },
+      });
       return response?.data;
     },
   });
 };
 
-// Get Group By Id
 export const useGetGroupById = (groupId: string) => {
   return useQuery({
     queryKey: ['group', groupId],
@@ -36,16 +47,13 @@ export const useGetGroupById = (groupId: string) => {
   });
 };
 
-// Update Group
 export const useUpdateGroup = () => {
   return useMutation({
     mutationFn: async (updateData: { id: string; data: any }) => {
       const response = await axiosInstance.put(
         `/group/my-groups`,
         updateData.data,
-        {
-          params: { id: updateData.id },
-        }
+        { params: { id: updateData.id } }
       );
       return response?.data;
     },

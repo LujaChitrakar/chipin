@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Text, View } from 'react-native';
+import { Text, ToastAndroid, View } from 'react-native';
 import Constants from 'expo-constants';
 import { usePrivy } from '@privy-io/expo';
 import { useRouter, Stack } from 'expo-router';
@@ -20,9 +20,6 @@ export default function Index() {
 
   // ✅ Navigate only after Privy is ready
   useEffect(() => {
-    setTimeout(() => {
-      router.replace('/tabs/groups');
-    }, 4000);
     if (!ready) return;
 
     if (user) {
@@ -32,6 +29,7 @@ export default function Index() {
           router.replace('/tabs/groups');
         },
         onError: (e: any) => {
+          ToastAndroid.showWithGravity(e.response?.data?.message || "Login Failed", 2000, ToastAndroid.CENTER);
           console.log('ERROR e::', e?.response?.data);
         },
       });

@@ -23,3 +23,23 @@ export const useLoginWithPrivy = () =>
       setItem('token', response?.data?.data?.token);
     },
   });
+
+export const useGetMyProfile = () => {
+  return useQuery({
+    queryKey: ["myprofile"],
+    queryFn: async () => {
+      const response = await axiosInstance.get('/user/profile');
+      return response.data;
+    }
+  })
+}
+
+export const useUpdateProfile = () => {
+  return useMutation({
+    mutationKey: ["updateProfile"],
+    mutationFn: async (updateData: any) => {
+      const response = await axiosInstance.put('/user/profile', updateData);
+      return response.data;
+    },
+  })
+}

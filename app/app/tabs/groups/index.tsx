@@ -15,29 +15,41 @@ import { useCreateGroup, useGetMyGroups } from '@/services/api/groupApi';
 import colors from '@/assets/colors';
 import { AntDesign, Feather } from '@expo/vector-icons';
 import Button from '@/components/common/Button';
+import { useGetMyFriends } from '@/services/api/friendsApi';
 
 const GroupsPage = () => {
-  const { data: myGroups, isLoading: myGroupsLoading } = useGetMyGroups();
   const { mutate: createGroup, isPending: creatingGroup } = useCreateGroup();
+
+  const [availableMembers, setAvailableMembers] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [groupName, setGroupName] = useState('');
   const [description, setDescription] = useState('');
-  const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedMemberEmails, setselectedMemberEmails] = useState<string[]>(
+    []
+  );
 
-  // Mock data for members - replace with actual API call
-  const availableMembers = [
-    { id: '1', name: 'Sarah Smith', email: 'sarah@example.com' },
-    { id: '2', name: 'Mike Johnson', email: 'mike@example.com' },
-    { id: '3', name: 'Emily Davis', email: 'emily@example.com' },
-  ];
+  const { data: myGroups, isLoading: myGroupsLoading } = useGetMyGroups({
+    page: 1,
+    limit: 10,
+    q: searchQuery,
+  });
+  const { data: myFriends, isLoading: myFriendsLoading } = useGetMyFriends({
+    page: 1,
+    limit: 5,
+    q: '',
+  });
 
-  const toggleMemberSelection = (memberId: string) => {
-    setSelectedMembers((prev) =>
-      prev.includes(memberId)
-        ? prev.filter((id) => id !== memberId)
-        : [...prev, memberId]
+  useEffect(() => {
+    setAvailableMembers(myFriends?.data || []);
+  }, [myFriends]);
+
+  const toggleMemberSelection = (memberEmail: string) => {
+    setselectedMemberEmails((prev) =>
+      prev.includes(memberEmail)
+        ? prev.filter((id) => id !== memberEmail)
+        : [...prev, memberEmail]
     );
   };
 
@@ -45,7 +57,7 @@ const GroupsPage = () => {
     const groupData = {
       name: groupName,
       description: description,
-      memberIds: selectedMembers,
+      member_emails: selectedMemberEmails,
     };
 
     createGroup(groupData, {
@@ -53,7 +65,7 @@ const GroupsPage = () => {
         // Reset form and close dialog
         setGroupName('');
         setDescription('');
-        setSelectedMembers([]);
+        setselectedMemberEmails([]);
         setShowCreateDialog(false);
       },
     });
@@ -62,15 +74,9 @@ const GroupsPage = () => {
   const handleCancel = () => {
     setGroupName('');
     setDescription('');
-    setSelectedMembers([]);
+    setselectedMemberEmails([]);
     setShowCreateDialog(false);
   };
-
-  console.log('MY GROUPS:', myGroups);
-
-  useEffect(()=>{
-    console.log("SHOW CREATE:::", showCreateDialog)
-  }, [showCreateDialog])
 
   return (
     <ScreenContainer>
@@ -88,7 +94,7 @@ const GroupsPage = () => {
             style={{
               flexDirection: 'row',
               alignItems: 'center',
-              justifyContent: 'start',
+              justifyContent: 'flex-start',
               width: '100%',
               borderWidth: 1,
               flex: 1,
@@ -106,6 +112,10 @@ const GroupsPage = () => {
               placeholder='Search groups...'
               placeholderTextColor={colors.gray.DEFAULT}
               style={{ flex: 1, color: colors.white, paddingVertical: 8 }}
+              value={searchQuery}
+              onChangeText={(searchQuery: string) => {
+                setSearchQuery(searchQuery);
+              }}
             />
           </View>
           <View
@@ -155,35 +165,49 @@ const GroupsPage = () => {
               }}
             />
           </View>
-          <View>
+          <View
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 8,
+            }}
+          >
             <Text
               style={{
                 color: colors.gray[400],
                 fontSize: 20,
                 fontWeight: 'semibold',
-                letterSpacing: 2,
                 marginTop: 8,
               }}
             >
-              Your Groups
+              Your Groups ({myGroups?.pagination?.totalCount || 0})
             </Text>
             {myGroups?.data?.map((group: any) => (
               <View
-                key={group.id}
+                key={group._id}
                 style={{
                   display: 'flex',
                   flexDirection: 'row',
                   alignItems: 'center',
                   paddingVertical: 8,
                   paddingHorizontal: 8,
+                  backgroundColor: colors.cardBackground.dark,
+                  borderColor: colors.gray[600],
+                  borderWidth: 1,
+                  borderRadius: 8,
                 }}
               >
                 <Button
                   backgroundColor={colors.primary.DEFAULT}
                   title=''
-                  icon={<Feather name='users' size={48} />}
+                  icon={<Feather name='users' size={24} />}
                   onPress={() => {}}
-                  style={{ borderRadius: 8 }}
+                  style={{
+                    borderRadius: 16,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
                 />
                 <View
                   style={{
@@ -192,6 +216,7 @@ const GroupsPage = () => {
                     alignItems: 'flex-start',
                     justifyContent: 'center',
                     marginLeft: 12,
+                    gap: 6,
                   }}
                 >
                   <Text style={{ color: colors.white, fontSize: 16 }}>
@@ -337,10 +362,10 @@ const GroupsPage = () => {
                     maxHeight: 200,
                   }}
                 >
-                  {availableMembers.map((member, index) => (
+                  {availableMembers.map((member: any, index: number) => (
                     <TouchableOpacity
-                      key={member.id}
-                      onPress={() => toggleMemberSelection(member.id)}
+                      key={member._id}
+                      onPress={() => toggleMemberSelection(member.email)}
                       style={{
                         flexDirection: 'row',
                         alignItems: 'center',
@@ -356,10 +381,12 @@ const GroupsPage = () => {
                           height: 24,
                           borderRadius: 4,
                           borderWidth: 2,
-                          borderColor: selectedMembers.includes(member.id)
+                          borderColor: selectedMemberEmails.includes(member.id)
                             ? colors.primary.DEFAULT
                             : colors.gray[500],
-                          backgroundColor: selectedMembers.includes(member.id)
+                          backgroundColor: selectedMemberEmails.includes(
+                            member.id
+                          )
                             ? colors.primary.DEFAULT
                             : 'transparent',
                           marginRight: 12,
@@ -367,7 +394,7 @@ const GroupsPage = () => {
                           alignItems: 'center',
                         }}
                       >
-                        {selectedMembers.includes(member.id) && (
+                        {selectedMemberEmails.includes(member.email) && (
                           <Feather
                             name='check'
                             size={16}
@@ -383,7 +410,7 @@ const GroupsPage = () => {
                             marginBottom: 2,
                           }}
                         >
-                          {member.name}
+                          {member.username}
                         </Text>
                         <Text
                           style={{

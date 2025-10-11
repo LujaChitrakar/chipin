@@ -26,22 +26,23 @@ const Button = ({
         borderRadius: 8,
         display: 'flex',
         flexDirection: 'row',
-        alignItems: "center",
-        justifyContent: "center",
+        alignItems: 'center',
+        justifyContent: 'center',
         gap: 8,
-        ...style
+        ...style,
       }}
       onPress={onPress}
-      
     >
       {icon && icon}
-      <Text
-        style={{
-          color: textColor,
-        }}
-      >
-        {title}
-      </Text>
+      {title && (
+        <Text
+          style={{
+            color: textColor,
+          }}
+        >
+          {title}
+        </Text>
+      )}
     </TouchableOpacity>
   );
 };

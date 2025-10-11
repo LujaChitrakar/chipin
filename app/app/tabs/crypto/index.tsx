@@ -7,6 +7,7 @@ const CryptoPage = () => {
   return (
     <ScreenContainer>
       <ScreenHeader title='Crypto' backButton={false} />
+      {/* ... rest of the page code */}
     </ScreenContainer>
   );
 }
