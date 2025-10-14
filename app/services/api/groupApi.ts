@@ -38,9 +38,7 @@ export const useGetGroupById = (groupId: string) => {
   return useQuery({
     queryKey: ['group', groupId],
     queryFn: async () => {
-      const response = await axiosInstance.get(`/group/my-groups`, {
-        params: { id: groupId },
-      });
+      const response = await axiosInstance.get(`/group/${groupId}`);
       return response?.data;
     },
     enabled: !!groupId,

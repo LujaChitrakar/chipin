@@ -13,11 +13,14 @@ import ScreenHeader from '@/components/navigation/ScreenHeader';
 import ScreenContainer from '@/components/ScreenContainer';
 import { useCreateGroup, useGetMyGroups } from '@/services/api/groupApi';
 import colors from '@/assets/colors';
-import { AntDesign, Feather } from '@expo/vector-icons';
+import { AntDesign, Feather, FontAwesome } from '@expo/vector-icons';
 import Button from '@/components/common/Button';
 import { useGetMyFriends } from '@/services/api/friendsApi';
+import { useRouter } from "expo-router";
 
 const GroupsPage = () => {
+  const router = useRouter();
+
   const { mutate: createGroup, isPending: creatingGroup } = useCreateGroup();
 
   const [availableMembers, setAvailableMembers] = useState([]);
@@ -183,8 +186,11 @@ const GroupsPage = () => {
               Your Groups ({myGroups?.pagination?.totalCount || 0})
             </Text>
             {myGroups?.data?.map((group: any) => (
-              <View
+              <TouchableOpacity
                 key={group._id}
+                onPress={() => {
+                  router.push(`/tabs/groups/${group._id}`);
+                }}
                 style={{
                   display: 'flex',
                   flexDirection: 'row',
@@ -226,7 +232,16 @@ const GroupsPage = () => {
                     {group.members.length} members
                   </Text>
                 </View>
-              </View>
+                <FontAwesome
+                  name='angle-right'
+                  style={{
+                    marginLeft: 'auto',
+                    marginRight: 8,
+                  }}
+                  size={18}
+                  color={colors.gray[600]}
+                />
+              </TouchableOpacity>
             ))}
           </View>
         </View>

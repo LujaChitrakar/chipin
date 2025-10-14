@@ -76,10 +76,10 @@ export default function Index() {
     );
   }
   return (
-    <View style={{ flex: 1, backgroundColor: colors.background }}>
+    <View style={{ flex: 1, backgroundColor: colors.background.DEFAULT }}>
       <Stack
         screenOptions={{
-          headerStyle: { backgroundColor: colors.primary },
+          headerStyle: { backgroundColor: colors.primary.DEFAULT },
           headerTintColor: colors.white,
           headerTitleStyle: { fontWeight: 'bold' },
         }}
