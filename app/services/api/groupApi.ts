@@ -47,11 +47,68 @@ export const useGetGroupById = (groupId: string) => {
 
 export const useUpdateGroup = () => {
   return useMutation({
-    mutationFn: async (updateData: { id: string; data: any }) => {
+    mutationFn: async (updateData: { groupId: string; data: any }) => {
       const response = await axiosInstance.put(
         `/group/my-groups`,
         updateData.data,
-        { params: { id: updateData.id } }
+        { params: { id: updateData.groupId } }
+      );
+      return response?.data;
+    },
+  });
+};
+
+export const useAddExpense = () => {
+  return useMutation({
+    mutationKey: ['addExpense'],
+    mutationFn: async ({
+      groupId,
+      expenseData,
+    }: {
+      groupId: string;
+      expenseData: any;
+    }) => {
+      const response = await axiosInstance.post(
+        `/group/${groupId}/expense`,
+        expenseData
+      );
+      return response?.data;
+    },
+  });
+};
+
+export const useUpdateExpense = () => {
+  return useMutation({
+    mutationKey: ['updateExpense'],
+    mutationFn: async ({
+      groupId,
+      expenseId,
+      expenseData,
+    }: {
+      groupId: string;
+      expenseId: string;
+      expenseData: any;
+    }) => {
+      const response = await axiosInstance.put(
+        `/group/${groupId}/expense/${expenseId}`,
+        expenseData
+      );
+      return response?.data;
+    },
+  });
+};
+export const useDeleteExpense = () => {
+  return useMutation({
+    mutationKey: ['deleteExpense'],
+    mutationFn: async ({
+      groupId,
+      expenseId,
+    }: {
+      groupId: string;
+      expenseId: string;
+    }) => {
+      const response = await axiosInstance.delete(
+        `/group/${groupId}/expense/${expenseId}`
       );
       return response?.data;
     },

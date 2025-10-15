@@ -1,10 +1,10 @@
 import { View, Text, TouchableOpacity, Image } from 'react-native';
 import React, { useEffect } from 'react';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, Feather } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import colors from '@/assets/colors';
 import { useGetMyProfile } from '@/services/api/authApi';
-import { useNavigation } from 'expo-router';
+import { useNavigation, useRouter } from 'expo-router';
 
 const GroupHeader = ({
   title,
@@ -21,14 +21,17 @@ const GroupHeader = ({
   useEffect(() => {
     navigation.setOptions({ headerShown: false });
   }, [navigation]);
+
+  const router = useRouter();
+
   const { data: myProfile, isLoading: myProfileLoading } = useGetMyProfile();
 
   const userProfile = myProfile?.data;
   const profilePicture = userProfile?.profile_picture;
   const firstLetter = (userProfile?.username || 'User').charAt(0).toUpperCase();
 
-  const totalOwedByUser = 40.17; // Example value, replace with actual calculation
-  const totalOwedToUser = 1000.0; // Example value, replace with actual calculation
+  const totalOwedByUser = 40.17;
+  const totalOwedToUser = 1000.0;
 
   const netBalance = totalOwedToUser - totalOwedByUser;
 
@@ -43,22 +46,30 @@ const GroupHeader = ({
         paddingHorizontal: 16,
       }}
     >
-      {backButton && (
-        <TouchableOpacity
-          onPress={onBackPress}
-          style={{
-            alignSelf: 'flex-start',
-            padding: 8,
-            borderRadius: 100,
-            borderColor: colors.white + '33',
-            borderWidth: 1,
-            backgroundColor: colors.white + '11',
-            marginBottom: 12,
-          }}
-        >
-          <Ionicons name='arrow-back' size={24} color={colors.white} />
-        </TouchableOpacity>
-      )}
+      <View
+        style={{
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+        }}
+      >
+        {backButton && (
+          <TouchableOpacity
+            onPress={onBackPress}
+            style={{
+              alignSelf: 'flex-start',
+              padding: 8,
+              borderRadius: 100,
+              borderColor: colors.white + '33',
+              borderWidth: 1,
+              backgroundColor: colors.white + '11',
+              marginBottom: 12,
+            }}
+          >
+            <Ionicons name='arrow-back' size={24} color={colors.white} />
+          </TouchableOpacity>
+        )}
+      </View>
 
       {/* Top Row - Title and Profile */}
       <View
@@ -96,23 +107,11 @@ const GroupHeader = ({
             borderWidth: 1,
             borderColor: 'rgba(255, 255, 255, 0.3)',
           }}
+          onPress={() => {
+            router.push(`/tabs/groups/${groupData?.data?._id}/settings`);
+          }}
         >
-          {profilePicture ? (
-            <Image
-              source={{ uri: profilePicture }}
-              style={{ width: 36, height: 36, borderRadius: 18 }}
-            />
-          ) : (
-            <Text
-              style={{
-                fontSize: 16,
-                fontWeight: '600',
-                color: '#ffffff',
-              }}
-            >
-              {firstLetter}
-            </Text>
-          )}
+          <Feather name='settings' size={18} color={colors.white} />
         </TouchableOpacity>
       </View>
 
