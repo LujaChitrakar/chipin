@@ -7,6 +7,7 @@ import {
   FlatList,
   Alert,
   Modal,
+  Image,
 } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { useGetMyFriends } from '@/services/api/friendsApi';
@@ -15,7 +16,6 @@ import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import colors from '@/assets/colors';
 import { useQueryClient } from '@tanstack/react-query';
 import { AntDesign, Ionicons } from '@expo/vector-icons';
-import ScreenHeader from '@/components/navigation/ScreenHeader';
 import ScreenContainer from '@/components/ScreenContainer';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -38,6 +38,7 @@ const GroupSettings = () => {
   const [selectedMembers, setSelectedMembers] = useState<any[]>([]);
   const [adminIds, setAdminIds] = useState<string[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [newAddingCustomEmail, setNewAddingCustomEmail] = useState('');
 
   useEffect(() => {
     navigation.setOptions({ headerShown: false });
@@ -47,6 +48,21 @@ const GroupSettings = () => {
       setSelectedMembers(groupData.data.members.map((m: any) => ({ ...m })));
     }
   }, [navigation, groupData]);
+
+  useEffect(() => {
+    const emailExtracted = friendSearchQuery?.toLowerCase()?.trim();
+    if (
+      !emailExtracted ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailExtracted) ||
+      friendsData?.data?.find((fr: any) => fr.email === emailExtracted) ||
+      groupData?.data?.member_emails?.includes(emailExtracted) ||
+      friendsData?.data?.find((fr: any) => fr.email === emailExtracted)
+    ) {
+      setNewAddingCustomEmail('');
+      return;
+    }
+    setNewAddingCustomEmail(emailExtracted);
+  }, [friendSearchQuery]);
 
   const isAdmin = groupData?.data?.member_admins.includes(
     groupData?.data?.members.find(
@@ -102,16 +118,31 @@ const GroupSettings = () => {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: ['group', groupId] });
           Alert.alert('Success', 'Group settings updated successfully');
+          queryClient.invalidateQueries({
+            queryKey: ['group', groupId],
+          });
         },
         onError: (error: any) => {
           console.log('ERROR UPDATING GROUP:', error?.response?.data);
           Alert.alert('Error', 'Failed to update group settings');
+          queryClient.invalidateQueries({
+            queryKey: ['group', groupId],
+          });
         },
       }
     );
   };
 
-  if (groupDataLoading || friendsLoading) {
+  // Identify invited emails (in member_emails but not in members)
+  const invitedEmails =
+    groupData?.data?.member_emails?.filter(
+      (email: string) =>
+        !groupData?.data?.members.some(
+          (member: any) => member.email.toLowerCase() === email.toLowerCase()
+        )
+    ) || [];
+
+  if (groupDataLoading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         <Text style={{ color: 'white', textAlign: 'center' }}>Loading...</Text>
@@ -141,9 +172,12 @@ const GroupSettings = () => {
         >
           {/* Left - Back Button + Title */}
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <TouchableOpacity onPress={()=>{
-              router.back();
-            }} style={{ marginRight: 12 }}>
+            <TouchableOpacity
+              onPress={() => {
+                router.back();
+              }}
+              style={{ marginRight: 12 }}
+            >
               <Ionicons name='arrow-back' size={24} color='#ffffff' />
             </TouchableOpacity>
             <Text
@@ -208,27 +242,110 @@ const GroupSettings = () => {
         </View>
         <View style={{ marginBottom: 16 }}>
           {selectedMembers.map((member: any) => (
-            <View
-              key={member.email}
+            <TouchableOpacity
               style={{
                 flexDirection: 'row',
                 alignItems: 'center',
                 backgroundColor: '#2a3b4d',
                 padding: 12,
                 borderRadius: 8,
-                marginBottom: 8,
-                justifyContent: 'space-between',
+                marginBottom: 4,
+              }}
+              onPress={() => {
+                handleAddMember(member);
               }}
             >
-              <Text style={{ color: 'white' }}>
-                {member.fullname || member.username || member.email}
-              </Text>
-              <TouchableOpacity onPress={() => handleRemoveMember(member)}>
-                <AntDesign name='close' size={20} color={colors.red[600]} />
-              </TouchableOpacity>
-            </View>
+              {/* Avatar */}
+              <View
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 20,
+                  backgroundColor: colors.gray[700],
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  marginRight: 12,
+                  overflow: 'hidden',
+                }}
+              >
+                {member.profile_picture ? (
+                  <Image
+                    source={{ uri: member.profile_picture }}
+                    style={{ width: 40, height: 40, borderRadius: 20 }}
+                    resizeMode='cover'
+                  />
+                ) : (
+                  <Text
+                    style={{
+                      color: 'white',
+                      fontSize: 20,
+                      fontWeight: 'bold',
+                    }}
+                  >
+                    {(member.fullname ||
+                      member.username ||
+                      member.email)[0]?.toUpperCase()}
+                  </Text>
+                )}
+              </View>
+              {/* Info */}
+              <View style={{ flex: 1 }}>
+                <Text
+                  style={{
+                    color: 'white',
+                    fontWeight: '600',
+                    fontSize: 16,
+                  }}
+                >
+                  {member.fullname || member.username || member.email}
+                </Text>
+                <Text style={{ color: colors.gray.DEFAULT, fontSize: 13 }}>
+                  {member.email}
+                </Text>
+              </View>
+            </TouchableOpacity>
           ))}
         </View>
+
+        {/* Invited Emails Section */}
+        {invitedEmails.length > 0 && (
+          <>
+            <Text
+              style={{
+                color: 'white',
+                fontSize: 18,
+                fontWeight: '600',
+                marginBottom: 8,
+              }}
+            >
+              Invited Emails
+            </Text>
+            <View
+              style={{ marginBottom: 16, display: 'flex', flexWrap: 'wrap' }}
+            >
+              {invitedEmails.map((email: string) => (
+                <View
+                  key={email}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    backgroundColor: '#2a3b4d',
+                    padding: 8,
+                    borderRadius: 8,
+                    marginBottom: 8,
+                  }}
+                >
+                  <Text style={{ color: 'white' }}>{email}</Text>
+                  <TouchableOpacity
+                    onPress={() =>
+                      handleRemoveMember({ email, _id: 'invited' })
+                    }
+                  ></TouchableOpacity>
+                </View>
+              ))}
+            </View>
+          </>
+        )}
 
         {isAdmin && (
           <>
@@ -299,7 +416,7 @@ const GroupSettings = () => {
       <Modal
         visible={showAddModal}
         onRequestClose={() => setShowAddModal(false)}
-        animationType='slide'
+        animationType='none'
         transparent={true}
       >
         <View
@@ -317,6 +434,7 @@ const GroupSettings = () => {
               padding: 16,
               width: '90%',
               maxHeight: '80%',
+              minHeight: '50%',
             }}
           >
             <View
@@ -353,30 +471,104 @@ const GroupSettings = () => {
               placeholder='Search friends or enter email'
               placeholderTextColor={colors.gray.DEFAULT}
             />
+            {newAddingCustomEmail && (
+              <TouchableOpacity
+                style={{
+                  backgroundColor: colors.gray[800],
+                  padding: 12,
+                  borderRadius: 8,
+                  marginBottom: 4,
+                }}
+                onPress={() => {
+                  handleAddMember({
+                    email: newAddingCustomEmail,
+                    _id: 'custom',
+                  });
+                }}
+              >
+                <Text
+                  style={{ color: 'white', textDecorationLine: 'underline' }}
+                >
+                  {newAddingCustomEmail}
+                  {'(Add as new email)'}
+                </Text>
+              </TouchableOpacity>
+            )}
             <FlatList
               data={friendsData?.data}
               keyExtractor={(item) => item.email}
               renderItem={({ item }) => (
                 <TouchableOpacity
                   style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
                     backgroundColor: '#2a3b4d',
                     padding: 12,
                     borderRadius: 8,
                     marginBottom: 4,
                   }}
                   onPress={() => {
-                    if (item._id === 'custom') {
-                      handleAddMember({ email: item.email });
-                    } else {
-                      handleAddMember(item);
-                    }
+                    handleAddMember(item);
                   }}
                 >
-                  <Text style={{ color: 'white' }}>
-                    {item.email} {item.username ? `(${item.username})` : ''}{' '}
-                    {item._id === 'custom' ? '(Add as new email)' : ''}
-                  </Text>
+                  {/* Avatar */}
+                  <View
+                    style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: 20,
+                      backgroundColor: colors.gray[700],
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      marginRight: 12,
+                      overflow: 'hidden',
+                    }}
+                  >
+                    {item.profile_picture ? (
+                      <Image
+                        source={{ uri: item.profile_picture }}
+                        style={{ width: 40, height: 40, borderRadius: 20 }}
+                        resizeMode='cover'
+                      />
+                    ) : (
+                      <Text
+                        style={{
+                          color: 'white',
+                          fontSize: 20,
+                          fontWeight: 'bold',
+                        }}
+                      >
+                        {(item.fullname ||
+                          item.username ||
+                          item.email)[0]?.toUpperCase()}
+                      </Text>
+                    )}
+                  </View>
+                  {/* Info */}
+                  <View style={{ flex: 1 }}>
+                    <Text
+                      style={{
+                        color: 'white',
+                        fontWeight: '600',
+                        fontSize: 16,
+                      }}
+                    >
+                      {item.fullname || item.username || item.email}
+                    </Text>
+                    <Text style={{ color: colors.gray.DEFAULT, fontSize: 13 }}>
+                      {item.email}
+                    </Text>
+                  </View>
                 </TouchableOpacity>
+              )}
+              ListEmptyComponent={() => (
+                <View style={{ padding: 16, alignItems: 'center' }}>
+                  <Text style={{ color: colors.gray.DEFAULT }}>
+                    {friendsLoading
+                      ? 'Loading friends...'
+                      : 'No friends found.'}
+                  </Text>
+                </View>
               )}
               style={{
                 maxHeight: 200,

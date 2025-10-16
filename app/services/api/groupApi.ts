@@ -49,9 +49,8 @@ export const useUpdateGroup = () => {
   return useMutation({
     mutationFn: async (updateData: { groupId: string; data: any }) => {
       const response = await axiosInstance.put(
-        `/group/my-groups`,
-        updateData.data,
-        { params: { id: updateData.groupId } }
+        `/group/${updateData.groupId}`,
+        updateData.data
       );
       return response?.data;
     },
