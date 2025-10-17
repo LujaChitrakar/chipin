@@ -196,6 +196,7 @@ const GroupDetailPage = () => {
         onBackPress={() => {
           router.back();
         }}
+        showQr={true}
       />
       <ScrollView
         refreshControl={
