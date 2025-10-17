@@ -57,6 +57,15 @@ export const useUpdateGroup = () => {
   });
 };
 
+export const useJoinGroupByGroupCode = () => {
+  return useMutation({
+    mutationFn: async (groupCode: string) => {
+      const response = await axiosInstance.put(`/group/${groupCode}/join`);
+      return response?.data;
+    },
+  });
+};
+
 export const useAddExpense = () => {
   return useMutation({
     mutationKey: ['addExpense'],

@@ -25,11 +25,16 @@ export default function Index() {
     if (user) {
       // @ts-ignore
       loginToApiWithPrivy(extractPrivyIdAndEmailFromPrivyUser(user), {
-        onSuccess: () => {
+        onSuccess: (response) => {
+          console.log('LOGIN SUCCESS::', response);
           router.replace('/tabs/groups');
         },
         onError: (e: any) => {
-          ToastAndroid.showWithGravity(e.response?.data?.message || "Login Failed", 2000, ToastAndroid.CENTER);
+          ToastAndroid.showWithGravity(
+            e.response?.data?.message || 'Login Failed',
+            2000,
+            ToastAndroid.CENTER
+          );
           console.log('ERROR e::', e?.response?.data);
         },
       });
@@ -39,8 +44,30 @@ export default function Index() {
   }, [user, ready]);
 
   // ✅ Show splash/loading until Privy is ready
-  if (!ready) {
-    return <LoadingScreen />;
+  if (!ready || loggingIn) {
+    return (
+      <View style={{ flex: 1, backgroundColor: colors.background.DEFAULT }}>
+        <LoadingScreen />
+      </View>
+    );
+  }
+
+  if (loginError) {
+    ToastAndroid.showWithGravity(
+      (loginError as any)?.response?.data?.message || 'Login Failed',
+      2000,
+      ToastAndroid.CENTER
+    );
+    router.replace('/auth/login');
+    if ((loginError as any)?.response?.status > 500) {
+      return (
+        <View style={{ flex: 1, backgroundColor: colors.background.DEFAULT }}>
+          <Text>Something went wrong. Please try again later.</Text>
+        </View>
+      );
+    } else {
+
+    }
   }
 
   // ✅ Validate Privy IDs

@@ -25,6 +25,7 @@ import colors from '@/assets/colors';
 import { launchCamera } from 'react-native-image-picker';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useQueryClient } from '@tanstack/react-query';
+import { extractQrContentFromImage } from "@/services/qrServices";
 
 const FriendsPage = () => {
   const queryClient = useQueryClient();
@@ -93,11 +94,6 @@ const FriendsPage = () => {
     setFriendsPage(1);
     setAllFriends([]);
   }, [searchQuery]);
-
-  const extractQrContentFromImage = (imageUri: string) => {
-    // TODO: implement the qr code extraction
-    return 'hemanthneupane@gmail.com';
-  };
 
   const friendsCount = myFriends?.pagination?.totalCount || 0;
   const hasMoreFriends = myFriends?.pagination?.hasNextPage || false;

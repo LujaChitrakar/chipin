@@ -19,8 +19,10 @@ export const useLoginWithPrivy = () =>
           email,
         }
       );
-      console.log('RESPNSE::', response?.data);
-      setItem('token', response?.data?.data?.token);
+      if (response?.data?.success) {
+        setItem('token', response?.data?.data?.token);
+      }
+      return response.data;
     },
   });
 

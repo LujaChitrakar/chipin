@@ -6,27 +6,48 @@ import {
   Modal,
   TouchableOpacity,
   FlatList,
+  StyleSheet,
+  ActivityIndicator,
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
-import GlobalStyles from '@/assets/global.styles';
 import ScreenHeader from '@/components/navigation/ScreenHeader';
 import ScreenContainer from '@/components/ScreenContainer';
-import { useCreateGroup, useGetMyGroups } from '@/services/api/groupApi';
+import {
+  useCreateGroup,
+  useGetMyGroups,
+  useJoinGroupByGroupCode,
+} from '@/services/api/groupApi';
 import colors from '@/assets/colors';
-import { AntDesign, Feather, FontAwesome } from '@expo/vector-icons';
+import {
+  AntDesign,
+  Feather,
+  FontAwesome,
+  MaterialCommunityIcons,
+} from '@expo/vector-icons';
 import Button from '@/components/common/Button';
 import { useGetMyFriends } from '@/services/api/friendsApi';
-import { useRouter } from "expo-router";
+import { useRouter } from 'expo-router';
+import { Regex, X } from 'lucide-react-native';
+import { launchImageLibrary } from 'react-native-image-picker';
+import { extractQrContentFromImage } from '@/services/qrServices';
+import { useQueryClient } from '@tanstack/react-query';
+import QrScanner from '@/components/QRScanner';
 
 const GroupsPage = () => {
   const router = useRouter();
 
   const { mutate: createGroup, isPending: creatingGroup } = useCreateGroup();
+  const { mutate: joinGroup, isPending: joiningGroup } =
+    useJoinGroupByGroupCode();
 
   const [availableMembers, setAvailableMembers] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
 
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [joinGroupModal, setShowJoinGroupModal] = useState(false);
+
+  const [groupIdToJoin, setGroupIdToJoin] = useState('');
+
   const [groupName, setGroupName] = useState('');
   const [description, setDescription] = useState('');
   const [selectedMemberEmails, setselectedMemberEmails] = useState<string[]>(
@@ -43,6 +64,7 @@ const GroupsPage = () => {
     limit: 5,
     q: '',
   });
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     setAvailableMembers(myFriends?.data || []);
@@ -70,6 +92,9 @@ const GroupsPage = () => {
         setDescription('');
         setselectedMemberEmails([]);
         setShowCreateDialog(false);
+        queryClient.invalidateQueries({
+          queryKey: ['my-groups'],
+        });
       },
     });
   };
@@ -79,6 +104,32 @@ const GroupsPage = () => {
     setDescription('');
     setselectedMemberEmails([]);
     setShowCreateDialog(false);
+  };
+
+  const pickImage = async () => {
+    const result = await launchImageLibrary({
+      mediaType: 'photo',
+      quality: 1,
+    });
+
+    if (!result.didCancel) {
+      const pickedImageUri = result.assets?.[0]?.uri || '';
+      const extractedEmail = extractQrContentFromImage(pickedImageUri);
+    }
+  };
+
+  const handleJoinGroup = () => {
+    joinGroup(groupIdToJoin, {
+      onSuccess: (response: any) => {
+        console.log('JOINING GROUP RESPONSE:::', response);
+        queryClient.invalidateQueries({
+          queryKey: ['my-groups'],
+        });
+      },
+      onError: (error: any) => {
+        console.log('JOINING GROUP ERROR:::', error);
+      },
+    });
   };
 
   return (
@@ -246,6 +297,88 @@ const GroupsPage = () => {
           </View>
         </View>
       </ScrollView>
+
+      {/* Join Group Modal */}
+      <Modal
+        visible={joinGroupModal}
+        transparent
+        animationType='fade'
+        onRequestClose={() => setShowJoinGroupModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            {/* Modal Header */}
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Add Friend</Text>
+              <TouchableOpacity
+                onPress={() => setShowJoinGroupModal(false)}
+                style={styles.closeButton}
+                activeOpacity={0.7}
+              >
+                <X size={24} color={colors.gray.DEFAULT} />
+              </TouchableOpacity>
+            </View>
+
+            {/* Modal Content */}
+            <View style={styles.modalContent}>
+              <Text style={styles.inputLabel}>Email Address</Text>
+              <View style={styles.emailInput}>
+                <Regex size={20} color={colors.gray.DEFAULT} />
+                <TextInput
+                  placeholder='friend@example.com'
+                  placeholderTextColor={colors.gray.DEFAULT}
+                  value={groupIdToJoin}
+                  onChangeText={setGroupIdToJoin}
+                  keyboardType='email-address'
+                  autoCapitalize='none'
+                  style={styles.emailTextInput}
+                />
+              </View>
+              <Text style={styles.orText}>Or</Text>
+              <QrScanner />
+              {/* <TouchableOpacity
+                onPress={() => {
+                  pickImage();
+                }}
+                style={styles.qrButton}
+              >
+                <MaterialCommunityIcons
+                  name='upload'
+                  size={20}
+                  color={colors.white}
+                />
+                <Text style={styles.qrButtonText}>Upload QR</Text>
+              </TouchableOpacity> */}
+            </View>
+
+            {/* Modal Actions */}
+            <View style={styles.modalActions}>
+              <TouchableOpacity
+                onPress={() => setShowJoinGroupModal(false)}
+                style={styles.cancelButton}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleJoinGroup}
+                style={[
+                  styles.confirmButton,
+                  !groupIdToJoin.trim() && styles.confirmButtonDisabled,
+                ]}
+                activeOpacity={0.8}
+                disabled={!groupIdToJoin.trim() || joiningGroup}
+              >
+                {joiningGroup ? (
+                  <ActivityIndicator size='small' color='white' />
+                ) : (
+                  <Text style={styles.confirmButtonText}>Add Friend</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       {/* Create Group Dialog */}
       <Modal
@@ -501,5 +634,121 @@ const GroupsPage = () => {
     </ScreenContainer>
   );
 };
+
+const styles = StyleSheet.create({
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+  },
+  modalContainer: {
+    backgroundColor: colors.cardBackground.DEFAULT,
+    borderRadius: 24,
+    width: '100%',
+    maxWidth: 400,
+    borderWidth: 1,
+    borderColor: colors.cardBackground.DEFAULT,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.cardBackground.DEFAULT,
+  },
+  modalTitle: {
+    color: colors.white,
+    fontWeight: 'bold',
+    fontSize: 20,
+  },
+  closeButton: {
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalContent: {
+    padding: 20,
+  },
+  inputLabel: {
+    color: colors.white,
+    marginBottom: 12,
+    fontWeight: '500',
+  },
+  emailInput: {
+    backgroundColor: colors.background.DEFAULT,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.cardBackground.DEFAULT,
+  },
+  emailTextInput: {
+    flex: 1,
+    marginLeft: 12,
+    color: colors.white,
+    fontSize: 16,
+  },
+  orText: {
+    color: colors.gray[100],
+    marginHorizontal: 'auto',
+    marginVertical: 8,
+    textAlign: 'center',
+  },
+  modalActions: {
+    flexDirection: 'row',
+    padding: 20,
+    gap: 12,
+  },
+  cancelButton: {
+    flex: 1,
+    backgroundColor: colors.background.DEFAULT,
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.gray.DEFAULT,
+  },
+  cancelButtonText: {
+    color: colors.white,
+    fontWeight: '600',
+    fontSize: 16,
+  },
+  confirmButton: {
+    flex: 1,
+    backgroundColor: colors.primary.DEFAULT,
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  confirmButtonDisabled: {
+    opacity: 0.5,
+  },
+  confirmButtonText: {
+    color: 'white',
+    fontWeight: '600',
+    fontSize: 16,
+  },
+  qrButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.gray[700] || '#334155',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    gap: 8,
+  },
+  qrButtonText: {
+    color: colors.white,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+});
 
 export default GroupsPage;

@@ -5,6 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import colors from '@/assets/colors';
 import { useGetMyProfile } from '@/services/api/authApi';
 import { useNavigation, useRouter } from 'expo-router';
+import { calculateGroupBalance } from "@/utils/balance.utils";
 
 const GroupHeader = ({
   title,
@@ -22,18 +23,20 @@ const GroupHeader = ({
     navigation.setOptions({ headerShown: false });
   }, [navigation]);
 
+  
   const router = useRouter();
-
+  
   const { data: myProfile, isLoading: myProfileLoading } = useGetMyProfile();
+  const {
+    youAreOwed: totalOwedToUser,
+    youOwe: totalOwedByUser,
+    netBalance,
+  } = calculateGroupBalance(groupData?.data, myProfile?.data?._id);
 
   const userProfile = myProfile?.data;
   const profilePicture = userProfile?.profile_picture;
   const firstLetter = (userProfile?.username || 'User').charAt(0).toUpperCase();
 
-  const totalOwedByUser = 40.17;
-  const totalOwedToUser = 1000.0;
-
-  const netBalance = totalOwedToUser - totalOwedByUser;
 
   return (
     <LinearGradient
