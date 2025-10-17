@@ -1,6 +1,6 @@
 export const calculateGroupBalance = (groupData: any, userId: string) => {
   const balances: { [key: string]: number } = {};
-  const members = groupData.members.map((m: any) => m._id);
+  const members = groupData?.members.map((m: any) => m._id) || [];
 
   // Initialize balances for all members
   members.forEach((memberId: string) => {
@@ -8,7 +8,7 @@ export const calculateGroupBalance = (groupData: any, userId: string) => {
   });
 
   // Process each expense
-  groupData.expenses.forEach((expense: any) => {
+  groupData?.expenses.forEach((expense: any) => {
     const amountPerPerson = expense.amount / expense.split_between.length;
     const paidById = expense.paid_by;
 
@@ -23,7 +23,6 @@ export const calculateGroupBalance = (groupData: any, userId: string) => {
     });
   });
 
-  // Calculate for the specific user
   const userBalance = balances[userId] || 0;
   let youOwe = 0;
   let youAreOwed = 0;

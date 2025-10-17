@@ -60,7 +60,7 @@ export const useUpdateGroup = () => {
 export const useJoinGroupByGroupCode = () => {
   return useMutation({
     mutationFn: async (groupCode: string) => {
-      const response = await axiosInstance.put(`/group/${groupCode}/join`);
+      const response = await axiosInstance.post(`/group/${groupCode}/join`);
       return response?.data;
     },
   });

@@ -5,9 +5,9 @@ import {
   TextInput,
   Modal,
   TouchableOpacity,
-  FlatList,
   StyleSheet,
   ActivityIndicator,
+  ToastAndroid,
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import ScreenHeader from '@/components/navigation/ScreenHeader';
@@ -28,10 +28,9 @@ import Button from '@/components/common/Button';
 import { useGetMyFriends } from '@/services/api/friendsApi';
 import { useRouter } from 'expo-router';
 import { Regex, X } from 'lucide-react-native';
-import { launchImageLibrary } from 'react-native-image-picker';
-import { extractQrContentFromImage } from '@/services/qrServices';
 import { useQueryClient } from '@tanstack/react-query';
-import QrScanner from '@/components/QRScanner';
+import QRScannerScreen from '@/components/QrScannerScreen';
+import LoadingScreen from '@/components/splash/LoadingScreen';
 
 const GroupsPage = () => {
   const router = useRouter();
@@ -45,6 +44,7 @@ const GroupsPage = () => {
 
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [joinGroupModal, setShowJoinGroupModal] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
 
   const [groupIdToJoin, setGroupIdToJoin] = useState('');
 
@@ -106,28 +106,22 @@ const GroupsPage = () => {
     setShowCreateDialog(false);
   };
 
-  const pickImage = async () => {
-    const result = await launchImageLibrary({
-      mediaType: 'photo',
-      quality: 1,
-    });
-
-    if (!result.didCancel) {
-      const pickedImageUri = result.assets?.[0]?.uri || '';
-      const extractedEmail = extractQrContentFromImage(pickedImageUri);
-    }
-  };
-
-  const handleJoinGroup = () => {
-    joinGroup(groupIdToJoin, {
+  const handleJoinGroup = (groupCode: string) => {
+    joinGroup(groupCode, {
       onSuccess: (response: any) => {
-        console.log('JOINING GROUP RESPONSE:::', response);
+        console.log('JOINING GROUP RESPONSE:::', response?.data);
         queryClient.invalidateQueries({
           queryKey: ['my-groups'],
         });
+        setShowJoinGroupModal(false);
       },
       onError: (error: any) => {
-        console.log('JOINING GROUP ERROR:::', error);
+        console.log('JOINING GROUP ERROR:::', error?.response?.data);
+        ToastAndroid.showWithGravity(
+          error?.response?.data?.message || 'Failed to join',
+          ToastAndroid.BOTTOM,
+          ToastAndroid.LONG
+        );
       },
     });
   };
@@ -197,7 +191,9 @@ const GroupsPage = () => {
               icon={<Feather name='users' color={colors.white} />}
               backgroundColor={colors.buttonBackground.DEFAULT}
               textColor={colors.white}
-              onPress={() => {}}
+              onPress={() => {
+                setShowJoinGroupModal(true);
+              }}
               style={{
                 flex: 1,
                 paddingVertical: 24,
@@ -298,6 +294,32 @@ const GroupsPage = () => {
         </View>
       </ScrollView>
 
+      <Modal
+        visible={showScanner}
+        transparent
+        animationType='fade'
+        onRequestClose={() => setShowScanner(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <QRScannerScreen
+            styles={{}}
+            onScan={(data) => {
+              if (/^[a-zA-Z0-9]{4,8}$/.test(data)) {
+                setGroupIdToJoin(data);
+                setShowScanner(false);
+                handleJoinGroup(data);
+              } else {
+                ToastAndroid.showWithGravity(
+                  'Invalid QR',
+                  ToastAndroid.SHORT,
+                  ToastAndroid.BOTTOM
+                );
+              }
+            }}
+          />
+        </View>
+      </Modal>
+
       {/* Join Group Modal */}
       <Modal
         visible={joinGroupModal}
@@ -309,7 +331,7 @@ const GroupsPage = () => {
           <View style={styles.modalContainer}>
             {/* Modal Header */}
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Add Friend</Text>
+              <Text style={styles.modalTitle}>Join Group</Text>
               <TouchableOpacity
                 onPress={() => setShowJoinGroupModal(false)}
                 style={styles.closeButton}
@@ -319,37 +341,43 @@ const GroupsPage = () => {
               </TouchableOpacity>
             </View>
 
-            {/* Modal Content */}
-            <View style={styles.modalContent}>
-              <Text style={styles.inputLabel}>Email Address</Text>
-              <View style={styles.emailInput}>
-                <Regex size={20} color={colors.gray.DEFAULT} />
-                <TextInput
-                  placeholder='friend@example.com'
-                  placeholderTextColor={colors.gray.DEFAULT}
-                  value={groupIdToJoin}
-                  onChangeText={setGroupIdToJoin}
-                  keyboardType='email-address'
-                  autoCapitalize='none'
-                  style={styles.emailTextInput}
-                />
+            {joiningGroup ? (
+              <View>
+                <LoadingScreen />
               </View>
-              <Text style={styles.orText}>Or</Text>
-              <QrScanner />
-              {/* <TouchableOpacity
-                onPress={() => {
-                  pickImage();
-                }}
-                style={styles.qrButton}
-              >
-                <MaterialCommunityIcons
-                  name='upload'
-                  size={20}
-                  color={colors.white}
-                />
-                <Text style={styles.qrButtonText}>Upload QR</Text>
-              </TouchableOpacity> */}
-            </View>
+            ) : (
+              <View style={styles.modalContent}>
+                <Text style={styles.inputLabel}>Group Code</Text>
+                <View style={styles.emailInput}>
+                  <Regex size={20} color={colors.gray.DEFAULT} />
+                  <TextInput
+                    placeholder='Enter Group code'
+                    placeholderTextColor={colors.gray.DEFAULT}
+                    value={groupIdToJoin}
+                    onChangeText={setGroupIdToJoin}
+                    keyboardType='email-address'
+                    autoCapitalize='none'
+                    style={styles.emailTextInput}
+                  />
+                </View>
+                <Text style={styles.orText}>Or</Text>
+
+                <TouchableOpacity
+                  onPress={() => {
+                    setShowScanner(true);
+                  }}
+                  style={styles.qrButton}
+                >
+                  <MaterialCommunityIcons
+                    name='qrcode'
+                    size={20}
+                    color={colors.white}
+                  />
+                  <Text style={styles.qrButtonText}>Scan QR</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+            {/* Modal Content */}
 
             {/* Modal Actions */}
             <View style={styles.modalActions}>
@@ -361,7 +389,9 @@ const GroupsPage = () => {
                 <Text style={styles.cancelButtonText}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                onPress={handleJoinGroup}
+                onPress={() => {
+                  handleJoinGroup(groupIdToJoin);
+                }}
                 style={[
                   styles.confirmButton,
                   !groupIdToJoin.trim() && styles.confirmButtonDisabled,

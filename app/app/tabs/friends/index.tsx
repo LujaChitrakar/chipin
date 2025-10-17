@@ -25,7 +25,8 @@ import colors from '@/assets/colors';
 import { launchCamera } from 'react-native-image-picker';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useQueryClient } from '@tanstack/react-query';
-import { extractQrContentFromImage } from "@/services/qrServices";
+import { extractQrContentFromImage } from '@/services/qrServices';
+import QRScannerScreen from '@/components/QrScannerScreen';
 
 const FriendsPage = () => {
   const queryClient = useQueryClient();
@@ -38,6 +39,7 @@ const FriendsPage = () => {
   const [requestsPage, setRequestsPage] = useState(1);
   const [allFriends, setAllFriends] = useState<any[]>([]);
   const [allRequests, setAllRequests] = useState<any[]>([]);
+  const [showScanner, setShowScanner] = useState(false);
 
   const {
     data: myFriends,
@@ -108,11 +110,13 @@ const FriendsPage = () => {
           ToastAndroid.BOTTOM,
           ToastAndroid.LONG
         );
+        setShowAddFriendModal(false);
+        setFriendEmail('');
       },
       onError: (error: any) => {
         console.log('ERROR::::', error?.response?.data);
         ToastAndroid.showWithGravity(
-          'Failed to send',
+          error?.response?.data?.message || 'Failed to send',
           ToastAndroid.BOTTOM,
           ToastAndroid.LONG
         );
@@ -180,8 +184,6 @@ const FriendsPage = () => {
     if (friendEmail.trim()) {
       handleSendFriendRequest(friendEmail.trim());
     }
-    setShowAddFriendModal(false);
-    setFriendEmail('');
   };
 
   const loadMoreFriends = () => {
@@ -427,35 +429,45 @@ const FriendsPage = () => {
             </View>
 
             {/* Modal Content */}
-            <View style={styles.modalContent}>
-              <Text style={styles.inputLabel}>Email Address</Text>
-              <View style={styles.emailInput}>
-                <Mail size={20} color={colors.gray.DEFAULT} />
-                <TextInput
-                  placeholder='friend@example.com'
-                  placeholderTextColor={colors.gray.DEFAULT}
-                  value={friendEmail}
-                  onChangeText={setFriendEmail}
-                  keyboardType='email-address'
-                  autoCapitalize='none'
-                  style={styles.emailTextInput}
+
+            {sendingFriendRequest ? (
+              <View style={styles.centered}>
+                <ActivityIndicator
+                  size='large'
+                  color={colors.primary.DEFAULT}
                 />
               </View>
-              <Text style={styles.orText}>Or</Text>
-              <TouchableOpacity
-                onPress={() => {
-                  pickImage();
-                }}
-                style={styles.qrButton}
-              >
-                <MaterialCommunityIcons
-                  name='qrcode-scan'
-                  size={20}
-                  color={colors.white}
-                />
-                <Text style={styles.qrButtonText}>Scan QR</Text>
-              </TouchableOpacity>
-            </View>
+            ) : (
+              <View style={styles.modalContent}>
+                <Text style={styles.inputLabel}>Email Address</Text>
+                <View style={styles.emailInput}>
+                  <Mail size={20} color={colors.gray.DEFAULT} />
+                  <TextInput
+                    placeholder='friend@example.com'
+                    placeholderTextColor={colors.gray.DEFAULT}
+                    value={friendEmail}
+                    onChangeText={setFriendEmail}
+                    keyboardType='email-address'
+                    autoCapitalize='none'
+                    style={styles.emailTextInput}
+                  />
+                </View>
+                <Text style={styles.orText}>Or</Text>
+                <TouchableOpacity
+                  onPress={() => {
+                    setShowScanner(true);
+                  }}
+                  style={styles.qrButton}
+                >
+                  <MaterialCommunityIcons
+                    name='qrcode-scan'
+                    size={20}
+                    color={colors.white}
+                  />
+                  <Text style={styles.qrButtonText}>Scan QR</Text>
+                </TouchableOpacity>
+              </View>
+            )}
 
             {/* Modal Actions */}
             <View style={styles.modalActions}>
@@ -467,7 +479,11 @@ const FriendsPage = () => {
                 <Text style={styles.cancelButtonText}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                onPress={handleAddFriend}
+                onPress={() => {
+                  if (!sendingFriendRequest) {
+                    handleAddFriend();
+                  }
+                }}
                 style={[
                   styles.confirmButton,
                   !friendEmail.trim() && styles.confirmButtonDisabled,
@@ -475,14 +491,41 @@ const FriendsPage = () => {
                 activeOpacity={0.8}
                 disabled={!friendEmail.trim() || sendingFriendRequest}
               >
-                {sendingFriendRequest ? (
-                  <ActivityIndicator size='small' color='white' />
-                ) : (
-                  <Text style={styles.confirmButtonText}>Add Friend</Text>
-                )}
+                <Text style={styles.confirmButtonText}>Add Friend</Text>
               </TouchableOpacity>
             </View>
           </View>
+        </View>
+      </Modal>
+
+      <Modal
+        visible={showScanner}
+        transparent
+        animationType='fade'
+        onRequestClose={() => setShowScanner(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <QRScannerScreen
+            onScan={(data) => {
+              const emailRegex =
+                /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/;
+              const match = data.match(emailRegex);
+
+              if (match) {
+                const email = match[0].trim();
+                setFriendEmail(email);
+                handleSendFriendRequest(email);
+                setShowScanner(false);
+              } else {
+                ToastAndroid.showWithGravity(
+                  'No valid email found in QR code',
+                  ToastAndroid.BOTTOM,
+                  ToastAndroid.LONG
+                );
+              }
+            }}
+            styles={undefined}
+          />
         </View>
       </Modal>
     </ScreenContainer>

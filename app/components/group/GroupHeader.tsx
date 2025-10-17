@@ -34,8 +34,6 @@ const GroupHeader = ({
   } = calculateGroupBalance(groupData?.data, myProfile?.data?._id);
 
   const userProfile = myProfile?.data;
-  const profilePicture = userProfile?.profile_picture;
-  const firstLetter = (userProfile?.username || 'User').charAt(0).toUpperCase();
 
 
   return (
