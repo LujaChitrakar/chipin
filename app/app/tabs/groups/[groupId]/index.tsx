@@ -24,6 +24,7 @@ import { AntDesign, FontAwesome } from '@expo/vector-icons';
 import colors from '@/assets/colors';
 import { useGetMyProfile } from '@/services/api/authApi';
 import { useQueryClient } from '@tanstack/react-query';
+import { calculateGroupBalance } from '@/utils/balance.utils';
 
 const GroupDetailPage = () => {
   const router = useRouter();
@@ -38,6 +39,13 @@ const GroupDetailPage = () => {
     useUpdateExpense();
   const { mutate: deleteExpense, isPending: deletingExpense } =
     useDeleteExpense();
+
+  const { allBalances } = calculateGroupBalance(
+    groupData?.data,
+    myProfile?.data?._id
+  );
+
+  console.log('All Balances:', JSON.stringify(allBalances, null, 2));
 
   const [activeTab, setActiveTab] = useState('Members');
   const [modalVisible, setModalVisible] = useState(false);
@@ -337,6 +345,90 @@ const GroupDetailPage = () => {
                     </View>
                   ))
                 )}
+              </>
+            )}
+            {activeTab === 'Balances' && (
+              <>
+                {members.map((member: any) => {
+                  const balance = allBalances[member._id] || 0;
+                  if (balance === 0) return null;
+                  if (member._id === myProfile?.data?._id) return null;
+                  const isLoggedInUser = member._id === myProfile?.data?._id;
+                  const balanceText =
+                    balance === 0
+                      ? `Net balance $${Math.abs(balance).toFixed(2)}`
+                      : balance < 0
+                      ? `You owe $${Math.abs(balance).toFixed(2)}`
+                      : `$${balance.toFixed(2)} owes you`;
+
+                  return (
+                    <View
+                      key={member._id}
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        backgroundColor: '#2a3b4d',
+                        padding: 12,
+                        borderRadius: 8,
+                      }}
+                    >
+                      <View
+                        style={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          gap: 10,
+                        }}
+                      >
+                        <View
+                          style={{
+                            width: 40,
+                            height: 40,
+                            borderRadius: 20,
+                            backgroundColor: '#1a9b8e',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                        >
+                          <Text
+                            style={{
+                              color: '#ffffff',
+                              fontSize: 18,
+                              fontWeight: '600',
+                            }}
+                          >
+                            {(member.fullname || member.username)
+                              .charAt(0)
+                              .toUpperCase()}
+                          </Text>
+                        </View>
+                        <View>
+                          <Text
+                            style={{
+                              color: '#ffffff',
+                              fontSize: 16,
+                              fontWeight: '500',
+                            }}
+                          >
+                            {member.fullname || member.username}
+                          </Text>
+                          <Text style={{ color: '#a0b0c0', fontSize: 14 }}>
+                            {member.email}
+                          </Text>
+                        </View>
+                      </View>
+                      <Text
+                        style={{
+                          color: balance < 0 ? '#ff4444' : '#1a9b8e',
+                          fontSize: 16,
+                          fontWeight: '600',
+                        }}
+                      >
+                        {balanceText}
+                      </Text>
+                    </View>
+                  );
+                })}
               </>
             )}
             {activeTab === 'Members' && (
@@ -671,24 +763,6 @@ const GroupDetailPage = () => {
                   >
                     {canEdit ? 'Edit Expense' : 'Expense Details'}
                   </Text>
-
-                  {/* {canEdit && (
-                    <TouchableOpacity
-                      style={{
-                        backgroundColor: colors.red[600],
-                        padding: 10,
-                        borderRadius: 5,
-                      }}
-                      onPress={() => {
-                        handleDeleteExpenseSubmit(
-                          editingExpenseId!,
-                          expense_title
-                        );
-                      }}
-                    >
-                      <FontAwesome name='trash' size={20} color='white' />
-                    </TouchableOpacity>
-                  )} */}
                 </View>
                 {canEdit ? (
                   <>

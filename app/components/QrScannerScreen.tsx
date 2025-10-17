@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, PermissionsAndroid } from 'react-native';
 import { Camera } from 'react-native-camera-kit';
-import ScreenContainer from './ScreenContainer';
 import LoadingScreen from './splash/LoadingScreen';
 
 interface QRScannerScreenProps {

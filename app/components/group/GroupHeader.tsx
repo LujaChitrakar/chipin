@@ -43,7 +43,6 @@ const GroupHeader = ({
   } = calculateGroupBalance(groupData?.data, myProfile?.data?._id);
   const [showQRModal, setShowQRModal] = useState(false);
 
-console.log('GROUP DATA IN HEADER:', groupData);
 
   return (
     <LinearGradient
