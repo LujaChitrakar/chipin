@@ -7,6 +7,7 @@ import {
   Modal,
   TextInput,
   Image,
+  ToastAndroid,
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { usePrivy } from '@privy-io/expo';
@@ -22,6 +23,8 @@ import QRCode from 'react-native-qrcode-svg';
 import { useUploadImage } from '@/services/api/uploadApi';
 import { launchImageLibrary, launchCamera } from 'react-native-image-picker';
 import { useQueryClient } from '@tanstack/react-query';
+import { useSendFriendRequest } from '@/services/api/friendsApi';
+import QRScannerScreen from '@/components/QrScannerScreen';
 
 const AccountPage = () => {
   const queryClient = useQueryClient();
@@ -37,6 +40,9 @@ const AccountPage = () => {
 
   const { mutate: uploadImage, isPending: uploadingImage } = useUploadImage();
 
+  const { mutate: sendFriendRequest, isPending: sendingFriendRequest } =
+    useSendFriendRequest();
+
   const [showQRModal, setShowQRModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editedFullName, setEditedFullName] = useState('');
@@ -45,6 +51,7 @@ const AccountPage = () => {
   const [profileVisible, setProfileVisible] = useState(true);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [uploadedImageUrl, setUploadedImageUrl] = useState('');
+  const [showScanner, setShowScanner] = useState(false);
 
   useEffect(() => {
     if (showEditModal && userProfile?.data) {
@@ -119,6 +126,27 @@ const AccountPage = () => {
     await logout();
     await deleteItemAsync('token');
     router.push('/');
+  };
+
+  const handleSendFriendRequest = (email: string) => {
+    sendFriendRequest(email, {
+      onSuccess: (response: any) => {
+        console.log('SUCCESS::::', response);
+        ToastAndroid.showWithGravity(
+          'Friend request sent',
+          ToastAndroid.BOTTOM,
+          ToastAndroid.LONG
+        );
+      },
+      onError: (error: any) => {
+        console.log('ERROR::::', error?.response?.data);
+        ToastAndroid.showWithGravity(
+          error?.response?.data?.message || 'Failed to send',
+          ToastAndroid.BOTTOM,
+          ToastAndroid.LONG
+        );
+      },
+    });
   };
 
   const getActivityIcon = (type: string, iconName: string) => {
@@ -415,7 +443,10 @@ const AccountPage = () => {
                   />
                   <Text style={styles.qrButtonText}>Show QR</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.qrButton}>
+                <TouchableOpacity
+                  style={styles.qrButton}
+                  onPress={() => setShowScanner(true)}
+                >
                   <MaterialCommunityIcons
                     name='qrcode-scan'
                     size={20}
@@ -565,6 +596,37 @@ const AccountPage = () => {
               <Text style={styles.qrCloseButtonText}>Close</Text>
             </TouchableOpacity>
           </View>
+        </View>
+      </Modal>
+
+      {/* QR Scanner Modal */}
+      <Modal
+        visible={showScanner}
+        transparent
+        animationType='fade'
+        onRequestClose={() => setShowScanner(false)}
+      >
+        <View style={styles.qrModalOverlay}>
+          <QRScannerScreen
+            onScan={(data) => {
+              const emailRegex =
+                /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/;
+              const match = data.match(emailRegex);
+
+              if (match) {
+                const email = match[0].trim();
+                handleSendFriendRequest(email);
+                setShowScanner(false);
+              } else {
+                ToastAndroid.showWithGravity(
+                  'No valid email found in QR code',
+                  ToastAndroid.BOTTOM,
+                  ToastAndroid.LONG
+                );
+              }
+            }}
+            styles={undefined}
+          />
         </View>
       </Modal>
     </ScreenContainer>

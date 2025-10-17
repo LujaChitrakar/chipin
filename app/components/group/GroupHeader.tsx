@@ -1,40 +1,49 @@
-import { View, Text, TouchableOpacity, Image } from 'react-native';
-import React, { useEffect } from 'react';
-import { Ionicons, Feather } from '@expo/vector-icons';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Image,
+  StyleSheet,
+  Modal,
+} from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Ionicons, Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import colors from '@/assets/colors';
 import { useGetMyProfile } from '@/services/api/authApi';
 import { useNavigation, useRouter } from 'expo-router';
-import { calculateGroupBalance } from "@/utils/balance.utils";
+import { calculateGroupBalance } from '@/utils/balance.utils';
+import QRCode from "react-native-qrcode-svg";
 
 const GroupHeader = ({
   title,
   backButton,
   onBackPress,
   groupData,
+  showQr = true,
 }: {
   title: string;
   backButton: boolean;
   onBackPress?: () => void;
   groupData: any;
+  showQr: boolean;
 }) => {
   const navigation = useNavigation();
   useEffect(() => {
     navigation.setOptions({ headerShown: false });
   }, [navigation]);
 
-  
   const router = useRouter();
-  
+
   const { data: myProfile, isLoading: myProfileLoading } = useGetMyProfile();
   const {
     youAreOwed: totalOwedToUser,
     youOwe: totalOwedByUser,
     netBalance,
   } = calculateGroupBalance(groupData?.data, myProfile?.data?._id);
+  const [showQRModal, setShowQRModal] = useState(false);
 
-  const userProfile = myProfile?.data;
-
+console.log('GROUP DATA IN HEADER:', groupData);
 
   return (
     <LinearGradient
@@ -47,6 +56,47 @@ const GroupHeader = ({
         paddingHorizontal: 16,
       }}
     >
+      <Modal
+        visible={showQRModal}
+        transparent={true}
+        animationType='fade'
+        onRequestClose={() => setShowQRModal(false)}
+      >
+        <View style={styles.qrModalOverlay}>
+          <View style={styles.qrModalContent}>
+            {/* Header */}
+            <View style={styles.qrModalHeader}>
+              <Text style={styles.qrModalTitle}>Your Group Invite QR Code</Text>
+              <TouchableOpacity onPress={() => setShowQRModal(false)}>
+                <Feather name='x' size={24} color={colors.gray[400]} />
+              </TouchableOpacity>
+            </View>
+
+            {/* QR Code */}
+            <View style={styles.qrCodeContainer}>
+              <QRCode
+                value={groupData?.data.groupCode || 'no-id'}
+                size={200}
+                color={colors.gray[800]}
+              />
+            </View>
+
+            {/* Instructions */}
+            <Text style={styles.qrInstructions}>
+              Share this QR code to invite friends to group
+            </Text>
+
+            {/* Close Button */}
+            <TouchableOpacity
+              style={styles.qrCloseButton}
+              onPress={() => setShowQRModal(false)}
+            >
+              <Text style={styles.qrCloseButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
       <View
         style={{
           display: 'flex',
@@ -117,16 +167,37 @@ const GroupHeader = ({
       </View>
 
       {/* Subtitle */}
-      <Text
+      <View
         style={{
-          fontSize: 14,
-          color: 'rgba(255, 255, 255, 0.8)',
-          marginBottom: 12,
-          paddingHorizontal: backButton ? 4 : 0,
+          display: 'flex',
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          width: '100%',
         }}
       >
-        {groupData?.data?.members?.length || 0} members
-      </Text>
+        <Text
+          style={{
+            fontSize: 14,
+            color: 'rgba(255, 255, 255, 0.8)',
+            marginBottom: 12,
+            paddingHorizontal: backButton ? 4 : 0,
+          }}
+        >
+          {groupData?.data?.members?.length || 0} members
+        </Text>
+        <TouchableOpacity
+          style={styles.qrButton}
+          onPress={() => setShowQRModal(true)}
+        >
+          <MaterialCommunityIcons
+            name='qrcode'
+            size={20}
+            color={colors.white}
+          />
+          <Text style={styles.qrButtonText}>Show QR</Text>
+        </TouchableOpacity>
+      </View>
 
       {/* Financial Summary */}
       <View
@@ -226,5 +297,131 @@ const GroupHeader = ({
     </LinearGradient>
   );
 };
+
+const styles = StyleSheet.create({
+  qrButton: {
+    flex: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.white + '22',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    gap: 8,
+    alignSelf: 'flex-end',
+    minWidth: 88,
+    maxWidth: '50%',
+    marginBottom: 16,
+  },
+  qrButtonText: {
+    color: colors.white,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  qrModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  qrModalContent: {
+    backgroundColor: colors.gray[800] || '#1e293b',
+    borderRadius: 16,
+    padding: 24,
+    width: '100%',
+    maxWidth: 400,
+    alignItems: 'center',
+  },
+  qrModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    marginBottom: 24,
+  },
+  qrModalTitle: {
+    color: colors.white,
+    fontSize: 22,
+    fontWeight: 'bold',
+  },
+  qrUserInfo: {
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  qrAvatar: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: colors.primary.DEFAULT || '#10b981',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+    overflow: 'hidden',
+  },
+  qrAvatarImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 30,
+  },
+  qrAvatarText: {
+    color: colors.white,
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  qrUsername: {
+    color: colors.white,
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  qrEmail: {
+    color: colors.gray[400] || '#9ca3af',
+    fontSize: 14,
+  },
+  qrCodeContainer: {
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 12,
+    marginBottom: 20,
+  },
+  qrIdContainer: {
+    width: '100%',
+    backgroundColor: colors.gray[700] || '#334155',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  qrIdLabel: {
+    color: colors.gray[400] || '#9ca3af',
+    fontSize: 12,
+    marginBottom: 4,
+  },
+  qrIdText: {
+    color: colors.white,
+    fontSize: 14,
+    fontFamily: 'monospace',
+  },
+  qrInstructions: {
+    color: colors.gray[400] || '#9ca3af',
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  qrCloseButton: {
+    backgroundColor: colors.primary.DEFAULT || '#10b981',
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+    borderRadius: 8,
+    width: '100%',
+  },
+  qrCloseButtonText: {
+    color: colors.white,
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+});
 
 export default GroupHeader;
