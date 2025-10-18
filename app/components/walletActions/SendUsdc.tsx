@@ -14,7 +14,7 @@ export default function SendUSDC() {
       const provider = await wallet.getProvider();
 
       const fromPubkey = wallet.publicKey;
-      const recipient = "F1EYWq9KoEV1Ue1sjLKpTz7Yx1z4x2H9gPpQTo7DZk9W";
+      const recipient = "BEL7ZKzg3rYrUL2hRaK2WocpxCc6QeBtArJwLiYWGyY6";
       const amount = 100;
 
       setStatus(" Sending 1 USDC...");
