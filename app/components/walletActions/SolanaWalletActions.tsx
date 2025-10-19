@@ -37,7 +37,7 @@ export default function SolanaWalletActions() {
       if (!provider) return;
 
       const transaction = new Transaction();
-      const connection = new Connection("https://api.mainnet-beta.solana.com");
+      const connection = new Connection("https://api.devnet.solana.com");
       transaction.recentBlockhash = (
         await connection.getLatestBlockhash("finalized")
       ).blockhash;
@@ -46,10 +46,10 @@ export default function SolanaWalletActions() {
         SystemProgram.transfer({
           fromPubkey: new PublicKey(wallet.publicKey),
           toPubkey: new PublicKey(
-            "So11111111111111111111111111111111111111112", // Replace with a valid recipient address
+            "So11111111111111111111111111111111111111112" // Replace with a valid recipient address
           ),
           lamports: 1000, // Amount in lamports (1 SOL = 1,000,000,000 lamports)
-        }),
+        })
       );
       // Sign the transaction
       const { signedTransaction } = await provider.request({
@@ -68,7 +68,7 @@ export default function SolanaWalletActions() {
       const provider = await wallet.getProvider?.();
       if (!provider) return;
       const transaction = new Transaction();
-      const connection = new Connection("https://api.mainnet-beta.solana.com");
+      const connection = new Connection("https://api.devnet.solana.com");
       transaction.recentBlockhash = (
         await connection.getLatestBlockhash("finalized")
       ).blockhash;
@@ -77,10 +77,10 @@ export default function SolanaWalletActions() {
         SystemProgram.transfer({
           fromPubkey: new PublicKey(wallet.publicKey),
           toPubkey: new PublicKey(
-            "So11111111111111111111111111111111111111112", // Replace with a valid recipient address
+            "So11111111111111111111111111111111111111112" // Replace with a valid recipient address
           ),
           lamports: 1000, // Amount in lamports (1 SOL = 1,000,000,000 lamports)
-        }),
+        })
       );
       const { signature } = await provider.request({
         method: "signAndSendTransaction",

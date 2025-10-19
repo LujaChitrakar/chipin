@@ -9,6 +9,7 @@ import {
 import { useFonts } from "expo-font";
 import { useColorScheme } from "react-native";
 import { Slot } from "expo-router";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 export default function RootLayout() {
   useFonts({
@@ -29,7 +30,9 @@ export default function RootLayout() {
         },
       }}
     >
-      <Slot />
+      <QueryClientProvider client={new QueryClient()}>
+        <Slot />
+      </QueryClientProvider>
       <PrivyElements config={{ appearance: { colorScheme } }} />
     </PrivyProvider>
   );

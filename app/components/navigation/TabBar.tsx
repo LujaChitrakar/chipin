@@ -1,7 +1,7 @@
 import { View, StyleSheet } from 'react-native';
 import React from 'react';
 import TabBarButton from './TabBarButton';
-import colors from "@/assets/colors";
+import colors from '@/assets/colors';
 
 type TabBarProps = {
   state: any;
@@ -10,7 +10,12 @@ type TabBarProps = {
 };
 
 const TabBar = ({ state, descriptors, navigation }: TabBarProps) => {
-  
+
+  // If the page is a dynamic route (e.g., [groupId]), do not render the tab bar
+  const currentRoute = state.routes[state.index];
+  const hasBracketRoute = /\[.*\]/.test(currentRoute.name);
+  if (hasBracketRoute) return null;
+
   return (
     <View style={styles.tabbar}>
       {state.routes.map((route: any, index: number) => {
@@ -23,6 +28,9 @@ const TabBar = ({ state, descriptors, navigation }: TabBarProps) => {
             : route.name;
 
         if (['_sitemap', '+not-found'].includes(route.name)) return null;
+
+        // Do not render the unnecessary nested dynamic routes in tab bar
+        if (/\[.*\]/.test(route.name)) return null;
 
         const isFocused = state.index === index;
 
@@ -61,6 +69,8 @@ const TabBar = ({ state, descriptors, navigation }: TabBarProps) => {
   );
 };
 
+// colors.primary
+
 const styles = StyleSheet.create({
   tabbar: {
     position: 'absolute',
@@ -77,7 +87,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 10 },
     shadowRadius: 10,
     shadowOpacity: 0.1,
-    
   },
 });
 
