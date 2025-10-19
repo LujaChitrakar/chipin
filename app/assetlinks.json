@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.chipin.app",
+      "sha256_cert_fingerprints": [
+        "5C:9D:8D:1C:6A:0B:08:36:FB:D1:9A:C1:19:21:6F:97:E6:54:B7:1C:23:D9:68:47:20:41:8E:5A:2F:36:FF:D3"
+      ]
+    }
+  }
+]
