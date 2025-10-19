@@ -8,15 +8,18 @@ export const useLoginWithPrivy = () =>
     mutationFn: async ({
       privyId,
       email,
+      wallet_public_key,
     }: {
       privyId: string;
       email: string;
+      wallet_public_key: string;
     }) => {
       const response = await axiosInstance.post(
         '/auth/signupOrLoginWithPrivy',
         {
           privyId,
           email,
+          wallet_public_key,
         }
       );
       if (response?.data?.success) {

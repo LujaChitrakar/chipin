@@ -36,12 +36,11 @@ export const useGetMyGroups = ({
 
 export const useGetGroupById = (groupId: string) => {
   return useQuery({
-    queryKey: ['group', groupId],
+    queryKey: [groupId],
     queryFn: async () => {
       const response = await axiosInstance.get(`/group/${groupId}`);
       return response?.data;
     },
-    enabled: !!groupId,
   });
 };
 
@@ -117,6 +116,25 @@ export const useDeleteExpense = () => {
     }) => {
       const response = await axiosInstance.delete(
         `/group/${groupId}/expense/${expenseId}`
+      );
+      return response?.data;
+    },
+  });
+};
+
+export const useAddGroupPayment = () => {
+  return useMutation({
+    mutationKey: ['addPayment'],
+    mutationFn: async ({
+      groupId,
+      paymentData,
+    }: {
+      groupId: string;
+      paymentData: any;
+    }) => {
+      const response = await axiosInstance.post(
+        `/group/${groupId}/payment`,
+        paymentData
       );
       return response?.data;
     },

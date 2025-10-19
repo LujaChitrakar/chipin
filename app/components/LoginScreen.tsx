@@ -2,6 +2,8 @@ import { Linking, Text, View } from "react-native";
 import Constants from "expo-constants";
 import * as Application from "expo-application";
 import PrivyUI from "./login/PrivyUI";
+import PasskeyLogin from "./login/PasskeyLogin";
+import OAuth from "./login/OAuth";
 
 export default function LoginScreen() {
   return (
@@ -31,6 +33,8 @@ export default function LoginScreen() {
       </Text>
 
       <PrivyUI />
+      <PasskeyLogin />
+      <OAuth />
     </View>
   );
 }

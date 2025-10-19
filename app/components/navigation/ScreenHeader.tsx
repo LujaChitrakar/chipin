@@ -1,9 +1,14 @@
 import { View, Text, TouchableOpacity, Image } from 'react-native';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import colors from '@/assets/colors';
 import { useGetMyProfile } from '@/services/api/authApi';
+import { usePrivy } from '@privy-io/expo';
+import { Connection, PublicKey } from '@solana/web3.js';
+import { checkAndCreateATA, checkBalance } from '@/utils/balance.utils';
+import { RPC_URL, USDC_MINT } from '@/constants/WalletConfig';
+import { useEmbeddedSolanaWallet } from '@privy-io/expo';
 
 const ScreenHeader = ({
   title,
@@ -14,14 +19,27 @@ const ScreenHeader = ({
   backButton: boolean;
   onBackPress?: () => void;
 }) => {
-  const { data: myProfile, isLoading: myProfileLoading } = useGetMyProfile();
+  const { wallets } = useEmbeddedSolanaWallet();
+  
+  const loadWalletBalance = async () => {
+    const wallet = wallets?.[0];
+    const connection = new Connection(RPC_URL);
+    const senderATA = await checkAndCreateATA(connection, wallet, USDC_MINT);
+    const bal = await checkBalance(connection, senderATA);
+    setBalance(bal);
+  };
 
+  const [balance, setBalance] = useState(0);
+  useEffect(() => {
+    loadWalletBalance();
+  }, [wallets]);
+
+  const { data: myProfile, isLoading: myProfileLoading } = useGetMyProfile();
   const totalOwedByUser = myProfile?.data?.totalOwedByUser || 0;
   const totalOwedToUser = myProfile?.data?.totalOwededToUser || 0;
   const profilePicture = myProfile?.data?.profile_picture;
   const username = myProfile?.data?.username || '';
   const firstLetter = username.charAt(0).toUpperCase();
-
   return (
     <LinearGradient
       colors={['#1a9b8e', '#16857a', '#137066']}
@@ -98,9 +116,9 @@ const ScreenHeader = ({
           flexDirection: 'row',
           justifyContent: 'space-around',
           alignItems: 'center',
-          backgroundColor: colors.white+"22",
+          backgroundColor: colors.white + '22',
           padding: 8,
-          borderRadius: 8
+          borderRadius: 8,
         }}
       >
         {/* You Owe */}
@@ -153,6 +171,37 @@ const ScreenHeader = ({
             }}
           >
             ${Number(totalOwedToUser).toFixed(2)}
+          </Text>
+        </View>
+
+        {/* Divider */}
+        <View
+          style={{
+            width: 1,
+            height: 40,
+            backgroundColor: 'rgba(255, 255, 255, 0.3)',
+          }}
+        />
+
+        {/* You Are Owed */}
+        <View style={{ alignItems: 'center', flex: 1 }}>
+          <Text
+            style={{
+              fontSize: 12,
+              color: 'rgba(255, 255, 255, 0.8)',
+              marginBottom: 4,
+            }}
+          >
+            Wallet Balance
+          </Text>
+          <Text
+            style={{
+              fontSize: 20,
+              fontWeight: '700',
+              color: '#ffffff',
+            }}
+          >
+            ${balance}
           </Text>
         </View>
       </View>
