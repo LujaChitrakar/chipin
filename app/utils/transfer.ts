@@ -4,9 +4,7 @@ import {
   createAssociatedTokenAccountInstruction,
   createTransferInstruction,
 } from "@solana/spl-token";
-
-const RPC_URL = "https://api.devnet.solana.com";
-const USDC_MINT = new PublicKey("Dei9PJazgB3ZmuYhU4woiZxmJJxofAWPMjFBPTPLZb3b"); // mock USDC mint
+import { RPC_URL, USDC_MINT } from "@/constants/WalletConfig";
 
 export async function transferUSDC(
   provider: any,
@@ -40,11 +38,11 @@ export async function transferUSDC(
   const tx = new Transaction().add(...instructions);
   tx.feePayer = fromKey;
   tx.recentBlockhash = (
-    await connection.getLatestBlockhash("finalized")
+    await connection.getLatestBlockhash('finalized')
   ).blockhash;
 
   const { signature } = await provider.request({
-    method: "signAndSendTransaction",
+    method: 'signAndSendTransaction',
     params: { transaction: tx, connection },
   });
 

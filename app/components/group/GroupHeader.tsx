@@ -13,7 +13,7 @@ import colors from '@/assets/colors';
 import { useGetMyProfile } from '@/services/api/authApi';
 import { useNavigation, useRouter } from 'expo-router';
 import { calculateGroupBalance } from '@/utils/balance.utils';
-import QRCode from "react-native-qrcode-svg";
+import QRCode from 'react-native-qrcode-svg';
 
 const GroupHeader = ({
   title,
@@ -43,7 +43,6 @@ const GroupHeader = ({
   } = calculateGroupBalance(groupData?.data, myProfile?.data?._id);
   const [showQRModal, setShowQRModal] = useState(false);
 
-
   return (
     <LinearGradient
       colors={['#1a9b8e', '#16857a', '#137066']}
@@ -69,6 +68,15 @@ const GroupHeader = ({
               <TouchableOpacity onPress={() => setShowQRModal(false)}>
                 <Feather name='x' size={24} color={colors.gray[400]} />
               </TouchableOpacity>
+            </View>
+
+            <View>
+              <View style={styles.qrIdContainer}>
+                <Text style={{ ...styles.qrIdLabel, fontSize: 13, textAlign: "center" }}>Group Code</Text>
+                <Text style={{ ...styles.qrIdText, fontSize: 18, textAlign: "center" }}>
+                  {groupData?.data.groupCode || 'no-id'}
+                </Text>
+              </View>
             </View>
 
             {/* QR Code */}

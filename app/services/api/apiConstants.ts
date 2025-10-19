@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { getItem } from 'expo-secure-store';
-export const baseUrl = 'https://split-share-backend.onrender.com';
+export const baseUrl = 'http://192.168.254.21:5000';
+// export const baseUrl = 'https://split-share-backend.onrender.com';
 export const apiBaseUrl = `${baseUrl}`;
 console.log('API ', apiBaseUrl);
 
