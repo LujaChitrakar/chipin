@@ -102,7 +102,7 @@ const GroupTabContent: React.FC<GroupTabContentProps> = ({
           );
         },
         onError: (err) => {
-          console.error('TRANSFERED USDC ERROR:::', err);
+          console.error('TRANSFERED USDC ERROR:::', err.name);
           setErrorMessage(err.message || 'Failed to process payment.');
           setErrorModalVisible(true);
           setSettlingMemberId(member?._id);

@@ -19,17 +19,15 @@ export const checkAndCreateATA = async (
   wallet: any,
   usdcMint: PublicKey
 ) => {
-  const ata = await getAssociatedTokenAddress(
-    usdcMint,
-    new PublicKey(wallet.publicKey)
-  );
+  const walletPublicKey = new PublicKey(wallet.publicKey);
+  const ata = await getAssociatedTokenAddress(usdcMint, walletPublicKey);
   const accountInfo = await connection.getAccountInfo(ata);
   if (!accountInfo) {
     const transaction = new Transaction().add(
       createAssociatedTokenAccountInstruction(
-        wallet.publicKey, // payer
+        walletPublicKey, // payer
         ata, // ATA address
-        wallet.publicKey, // owner
+        walletPublicKey, // owner
         usdcMint // token mint
       )
     );
