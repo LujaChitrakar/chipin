@@ -12,6 +12,7 @@ const sendUSDC = async ({
 }) => {
   if (!wallet?.getProvider) throw new Error('Wallet not found');
   const provider = await wallet.getProvider();
+  console.log("WALLET KEY:", wallet.publicKey);
 
   const fromPubkey = wallet.publicKey;
   const sig = await transferUSDC(provider, fromPubkey, recipient, amount);
