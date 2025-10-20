@@ -84,10 +84,6 @@ const GroupDetailPage = () => {
   const expenses = groupData?.data?.expenses || [];
   const isAdmin = groupData?.data?.member_admins.includes(myProfile?.data?._id);
 
-  const sendExpenseUsdc = (publicKey: string, amount: number) => {
-    // Need to invoke the transfer usdc
-  };
-
   const handleAddExpenseSubmit = (formData: {
     expense_title: string;
     amount: string;
@@ -232,7 +228,7 @@ const GroupDetailPage = () => {
           <RefreshControl
             onRefresh={() => {
               queryClient.invalidateQueries({
-                queryKey: ['group', groupId],
+                queryKey: [groupId],
               });
             }}
             refreshing={groupDataLoading}

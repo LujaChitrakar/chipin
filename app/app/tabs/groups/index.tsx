@@ -8,6 +8,7 @@ import {
   StyleSheet,
   ActivityIndicator,
   ToastAndroid,
+  RefreshControl,
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import ScreenHeader from '@/components/navigation/ScreenHeader';
@@ -23,6 +24,7 @@ import {
   Feather,
   FontAwesome,
   MaterialCommunityIcons,
+  MaterialIcons,
 } from '@expo/vector-icons';
 import Button from '@/components/common/Button';
 import { useGetMyFriends } from '@/services/api/friendsApi';
@@ -129,7 +131,18 @@ const GroupsPage = () => {
   return (
     <ScreenContainer>
       <ScreenHeader title='Groups' backButton={false} />
-      <ScrollView>
+      <ScrollView
+        refreshControl={
+          <RefreshControl
+            onRefresh={() => {
+              queryClient.invalidateQueries({
+                queryKey: ['my-groups'],
+              });
+            }}
+            refreshing={myGroupsLoading}
+          />
+        }
+      >
         <View
           style={{
             display: 'flex',
@@ -251,9 +264,17 @@ const GroupsPage = () => {
                 }}
               >
                 <Button
-                  backgroundColor={colors.primary.DEFAULT}
+                  backgroundColor={
+                    group.settled ? colors.primary[400] : colors.primary.DEFAULT
+                  }
                   title=''
-                  icon={<Feather name='users' size={24} />}
+                  icon={
+                    group.settled ? (
+                      <MaterialIcons name='done' size={24} />
+                    ) : (
+                      <Feather name='users' size={24} />
+                    )
+                  }
                   onPress={() => {}}
                   style={{
                     borderRadius: 16,
@@ -272,9 +293,23 @@ const GroupsPage = () => {
                     gap: 6,
                   }}
                 >
-                  <Text style={{ color: colors.white, fontSize: 16 }}>
-                    {group.name}
-                  </Text>
+                  <View
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'row',
+                      gap: 8,
+                    }}
+                  >
+                    <Text style={{ color: colors.white, fontSize: 16 }}>
+                      {group.name}
+                    </Text>
+                    {group.settled && <Text style={{
+                      color: colors.white,
+                      backgroundColor: colors.primary.DEFAULT,
+                      paddingHorizontal: 8,
+                      borderRadius: 8
+                    }}>Settled</Text>}
+                  </View>
                   <Text style={{ color: colors.gray[400] }}>
                     {group.members.length} members
                   </Text>

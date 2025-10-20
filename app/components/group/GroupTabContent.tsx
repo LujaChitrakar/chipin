@@ -247,11 +247,10 @@ const GroupTabContent: React.FC<GroupTabContentProps> = ({
         <>
           {members.map((member: any) => {
             const balance = allBalances[member._id] || 0;
-            if (balance === 0) return null;
             if (member._id === myProfile?.data?._id) return null;
             const balanceText =
               balance === 0
-                ? `Net balance $${Math.abs(balance).toFixed(2)}`
+                ? `Settled`
                 : balance < 0
                 ? `You owe $${Math.abs(balance).toFixed(2)}`
                 : `$${balance.toFixed(2)} owes you`;
