@@ -5,7 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import colors from '@/assets/colors';
 import { useGetMyProfile } from '@/services/api/authApi';
 import { usePrivy } from '@privy-io/expo';
-import { Connection, PublicKey } from '@solana/web3.js';
+import { Connection } from '@solana/web3.js';
 import { checkAndCreateATA, checkBalance } from '@/utils/balance.utils';
 import { RPC_URL, USDC_MINT } from '@/constants/WalletConfig';
 import { useEmbeddedSolanaWallet } from '@privy-io/expo';

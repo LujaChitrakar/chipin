@@ -1,8 +1,6 @@
-import { View, Text } from 'react-native';
 import React from 'react';
 import { Tabs } from 'expo-router';
 import TabBar from '../../components/navigation/TabBar';
-import colors from '@/assets/colors';
 
 const TabLayout = () => {
   return (
@@ -25,6 +23,13 @@ const TabLayout = () => {
         name='friends/index'
         options={{
           title: 'Friends',
+          headerShown: false,
+        }}
+      />
+      <Tabs.Screen
+        name='saving/index'
+        options={{
+          title: 'Saving',
           headerShown: false,
         }}
       />

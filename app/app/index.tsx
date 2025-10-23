@@ -53,6 +53,7 @@ export default function Index() {
   }
 
   if (loginError) {
+    console.log("LOGIN ERROR:::", loginError)
     ToastAndroid.showWithGravity(
       (loginError as any)?.response?.data?.message || 'Login Failed',
       2000,

@@ -243,6 +243,7 @@ const GroupSettings = () => {
         <View style={{ marginBottom: 16 }}>
           {selectedMembers.map((member: any) => (
             <TouchableOpacity
+              key={member._id}
               style={{
                 flexDirection: 'row',
                 alignItems: 'center',

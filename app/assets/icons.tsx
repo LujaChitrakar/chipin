@@ -11,12 +11,22 @@ export const icons = {
       return <Feather name='users' size={size} color={color} />;
     } else if (name.includes('crypto')) {
       return (
-        <MaterialCommunityIcons name='wallet-outline' size={size} color={color} />
+        <MaterialCommunityIcons
+          name='wallet-outline'
+          size={size}
+          color={color}
+        />
       );
     } else if (name.includes('friends')) {
       return <FontAwesome5 name='user-circle' size={size} color={color} />;
     } else if (name.includes('account')) {
       return <Feather name='settings' size={size} color={color} />;
+    } else if (name.includes('saving')) {
+      return <MaterialCommunityIcons
+        name='piggy-bank-outline'
+        size={size}
+        color={color}
+      />;
     } else {
       return null;
     }
