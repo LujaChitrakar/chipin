@@ -1,0 +1,627 @@
+import { ToastAndroid, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import Button from '../common/Button';
+import { PlusCircle, UserRoundPlus } from 'lucide-react-native';
+import colors from '@/assets/colors';
+
+import {
+  Text,
+  ScrollView,
+  TextInput,
+  Modal,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+} from 'react-native';
+import {
+  useCreateGroup,
+  useGetMyGroups,
+  useJoinGroupByGroupCode,
+} from '@/services/api/groupApi';
+import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { useGetMyFriends } from '@/services/api/friendsApi';
+import { Regex, X } from 'lucide-react-native';
+import { useQueryClient } from '@tanstack/react-query';
+import LoadingScreen from '@/components/splash/LoadingScreen';
+import QRScannerScreen from '../QrScannerScreen';
+
+const JoinCreateButton = () => {
+  const { mutate: createGroup, isPending: creatingGroup } = useCreateGroup();
+  const { mutate: joinGroup, isPending: joiningGroup } =
+    useJoinGroupByGroupCode();
+  const { data: myFriends, isLoading: myFriendsLoading } = useGetMyFriends({
+    page: 1,
+    limit: 5,
+    q: '',
+  });
+  const queryClient = useQueryClient();
+
+  const [availableMembers, setAvailableMembers] = useState([]);
+
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [joinGroupModal, setShowJoinGroupModal] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
+
+  const [groupIdToJoin, setGroupIdToJoin] = useState('');
+
+  const [groupName, setGroupName] = useState('');
+  const [description, setDescription] = useState('');
+  const [selectedMemberEmails, setselectedMemberEmails] = useState<string[]>(
+    []
+  );
+
+  useEffect(() => {
+    setAvailableMembers(myFriends?.data || []);
+  }, [myFriends]);
+
+  const toggleMemberSelection = (memberEmail: string) => {
+    setselectedMemberEmails((prev: any) =>
+      prev.includes(memberEmail)
+        ? prev.filter((id: string) => id !== memberEmail)
+        : [...prev, memberEmail]
+    );
+  };
+
+  const handleCreateGroup = () => {
+    const groupData = {
+      name: groupName,
+      description: description,
+      member_emails: selectedMemberEmails,
+    };
+
+    createGroup(groupData, {
+      onSuccess: () => {
+        setGroupName('');
+        setDescription('');
+        setselectedMemberEmails([]);
+        setShowCreateDialog(false);
+        queryClient.invalidateQueries({
+          queryKey: ['my-groups'],
+        });
+      },
+    });
+  };
+
+  const handleCancel = () => {
+    setGroupName('');
+    setDescription('');
+    setselectedMemberEmails([]);
+    setShowCreateDialog(false);
+  };
+
+  const handleJoinGroup = (groupCode: string) => {
+    joinGroup(groupCode, {
+      onSuccess: (response: any) => {
+        console.log('JOINING GROUP RESPONSE:::', response?.data);
+        queryClient.invalidateQueries({
+          queryKey: ['my-groups'],
+        });
+        setShowJoinGroupModal(false);
+      },
+      onError: (error: any) => {
+        console.log('JOINING GROUP ERROR:::', error?.response?.data);
+        ToastAndroid.showWithGravity(
+          error?.response?.data?.message || 'Failed to join',
+          ToastAndroid.BOTTOM,
+          ToastAndroid.LONG
+        );
+      },
+    });
+  };
+
+  return (
+    <>
+      <View
+        style={{
+          flexDirection: 'row',
+          gap: 12,
+          display: 'flex',
+        }}
+      >
+        <Button
+          title='Join Group'
+          icon={<UserRoundPlus size={18} />}
+          onPress={() => {
+            setShowJoinGroupModal(true);
+          }}
+          style={{
+            flex: 1,
+          }}
+        />
+        <Button
+          title='Create Group'
+          icon={<PlusCircle color={colors.white} size={18} />}
+          onPress={() => {
+            setShowCreateDialog(true);
+          }}
+          style={{
+            flex: 1,
+            backgroundColor: colors.cardBackground.light,
+          }}
+          textColor={colors.white}
+        />
+      </View>
+
+      {/* Join Group Modal */}
+      <Modal
+        visible={joinGroupModal}
+        transparent
+        animationType='fade'
+        onRequestClose={() => setShowJoinGroupModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            {/* Modal Header */}
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Join Group</Text>
+              <TouchableOpacity
+                onPress={() => setShowJoinGroupModal(false)}
+                style={styles.closeButton}
+                activeOpacity={0.7}
+              >
+                <X size={24} color={colors.gray.DEFAULT} />
+              </TouchableOpacity>
+            </View>
+
+            {joiningGroup ? (
+              <View>
+                <LoadingScreen />
+              </View>
+            ) : (
+              <View style={styles.modalContent}>
+                <Text style={styles.inputLabel}>Group Code</Text>
+                <View style={styles.emailInput}>
+                  <Regex size={20} color={colors.gray.DEFAULT} />
+                  <TextInput
+                    placeholder='Enter Group code'
+                    placeholderTextColor={colors.gray.DEFAULT}
+                    value={groupIdToJoin}
+                    onChangeText={setGroupIdToJoin}
+                    keyboardType='email-address'
+                    autoCapitalize='none'
+                    style={styles.emailTextInput}
+                  />
+                </View>
+                <Text style={styles.orText}>Or</Text>
+
+                <TouchableOpacity
+                  onPress={() => {
+                    setShowScanner(true);
+                  }}
+                  style={styles.qrButton}
+                >
+                  <MaterialCommunityIcons
+                    name='qrcode'
+                    size={20}
+                    color={colors.white}
+                  />
+                  <Text style={styles.qrButtonText}>Scan QR</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+            {/* Modal Content */}
+
+            {/* Modal Actions */}
+            <View style={styles.modalActions}>
+              <TouchableOpacity
+                onPress={() => setShowJoinGroupModal(false)}
+                style={styles.cancelButton}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  handleJoinGroup(groupIdToJoin);
+                }}
+                style={[
+                  styles.confirmButton,
+                  !groupIdToJoin.trim() && styles.confirmButtonDisabled,
+                ]}
+                activeOpacity={0.8}
+                disabled={!groupIdToJoin.trim() || joiningGroup}
+              >
+                {joiningGroup ? (
+                  <ActivityIndicator size='small' color='white' />
+                ) : (
+                  <Text style={styles.confirmButtonText}>Add Friend</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Create Group Dialog */}
+      <Modal
+        visible={showCreateDialog}
+        transparent={true}
+        animationType='fade'
+        onRequestClose={handleCancel}
+      >
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: 20,
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: colors.cardBackground.DEFAULT,
+              borderRadius: 12,
+              padding: 24,
+              width: '100%',
+              maxWidth: 500,
+              maxHeight: '80%',
+            }}
+          >
+            {/* Header */}
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: 24,
+              }}
+            >
+              <Text
+                style={{
+                  color: colors.white,
+                  fontSize: 24,
+                  fontWeight: 'bold',
+                }}
+              >
+                Create New Group
+              </Text>
+              <TouchableOpacity onPress={handleCancel}>
+                <Feather name='x' size={24} color={colors.grayTextColor.DEFAULT} />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView showsVerticalScrollIndicator={false}>
+              {/* Group Name */}
+              <View style={{ marginBottom: 20 }}>
+                <Text
+                  style={{
+                    color: colors.grayTextColor.DEFAULT,
+                    fontSize: 14,
+                    marginBottom: 8,
+                  }}
+                >
+                  Group Name *
+                </Text>
+                <TextInput
+                  value={groupName}
+                  onChangeText={setGroupName}
+                  placeholder='e.g., Weekend Trip, Apartment 4B'
+                  placeholderTextColor={colors.grayTextColor.dark}
+                  style={{
+                    backgroundColor: colors.textInputBackground.DEFAULT,
+                    color: colors.white,
+                    borderRadius: 8,
+                    padding: 12,
+                    fontSize: 16,
+                  }}
+                />
+              </View>
+
+              {/* Description */}
+              <View style={{ marginBottom: 20 }}>
+                <Text
+                  style={{
+                    color: colors.grayTextColor.DEFAULT,
+                    fontWeight: '500',
+                    fontSize: 14,
+                    marginBottom: 8,
+                  }}
+                >
+                  Description (optional)
+                </Text>
+                <TextInput
+                  value={description}
+                  onChangeText={setDescription}
+                  placeholder='What is this group for?'
+                  placeholderTextColor={colors.grayTextColor.dark}
+                  multiline
+                  numberOfLines={4}
+                  style={{
+                    backgroundColor: colors.textInputBackground.DEFAULT,
+                    color: colors.white,
+                    borderRadius: 8,
+                    padding: 12,
+                    fontSize: 16,
+                    borderWidth: 1,
+                    borderColor: colors.gray[600] || '#475569',
+                    textAlignVertical: 'top',
+                    minHeight: 100,
+                  }}
+                />
+              </View>
+
+              {/* Add Members */}
+              <View style={{ marginBottom: 20 }}>
+                <Text
+                  style={{
+                    color: colors.grayTextColor.DEFAULT,
+                    fontWeight: '500',
+                    fontSize: 14,
+                    marginBottom: 8,
+                  }}
+                >
+                  Add Members (optional)
+                </Text>
+                <View
+                  style={{
+                    backgroundColor: colors.textInputBackground.DEFAULT,
+                    borderRadius: 8,
+                    maxHeight: 200,
+                  }}
+                >
+                  {availableMembers.map((member: any, index: number) => (
+                    <TouchableOpacity
+                      key={member._id}
+                      onPress={() => toggleMemberSelection(member.email)}
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        padding: 12,
+                      }}
+                    >
+                      <View
+                        style={{
+                          width: 24,
+                          height: 24,
+                          borderRadius: 4,
+                          borderWidth: 2,
+                          borderColor: selectedMemberEmails.includes(member.id)
+                            ? colors.primary.DEFAULT
+                            : colors.grayTextColor.dark,
+                          backgroundColor: selectedMemberEmails.includes(
+                            member.id
+                          )
+                            ? colors.primary.DEFAULT
+                            : 'transparent',
+                          marginRight: 12,
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                        }}
+                      >
+                        {selectedMemberEmails.includes(member.email) && (
+                          <Feather
+                            name='check'
+                            size={16}
+                            color={colors.white}
+                          />
+                        )}
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text
+                          style={{
+                            color: colors.white,
+                            fontSize: 16,
+                            marginBottom: 2,
+                          }}
+                        >
+                          {member.username}
+                        </Text>
+                        <Text
+                          style={{
+                            color: colors.grayTextColor.DEFAULT,
+                            fontWeight: '500',
+                            fontSize: 14,
+                          }}
+                        >
+                          {member.email}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+            </ScrollView>
+
+            {/* Action Buttons */}
+            <View
+              style={{
+                flexDirection: 'row',
+                gap: 12,
+                marginTop: 24,
+              }}
+            >
+              <TouchableOpacity
+                onPress={handleCancel}
+                style={{
+                  flex: 1,
+                  backgroundColor: colors.textInputBackground.DEFAULT,
+                  padding: 16,
+                  borderRadius: 8,
+                  alignItems: 'center',
+                }}
+              >
+                <Text
+                  style={{
+                    color: colors.white,
+                    fontSize: 16,
+                    fontWeight: '600',
+                  }}
+                >
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleCreateGroup}
+                disabled={!groupName.trim() || creatingGroup}
+                style={{
+                  flex: 1,
+                  backgroundColor:
+                    !groupName.trim() || creatingGroup
+                      ? colors.grayTextColor.DEFAULT
+                      : colors.white,
+                  padding: 16,
+                  borderRadius: 8,
+                  alignItems: 'center',
+                }}
+              >
+                <Text
+                  style={{
+                    color: colors.black,
+                    fontSize: 16,
+                    fontWeight: '600',
+                  }}
+                >
+                  {creatingGroup ? 'Creating...' : 'Create Group'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+      <Modal
+        visible={showScanner}
+        transparent
+        animationType='fade'
+        onRequestClose={() => setShowScanner(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <QRScannerScreen
+            styles={{}}
+            onScan={(data) => {
+              if (/^[a-zA-Z0-9]{4,8}$/.test(data)) {
+                setGroupIdToJoin(data);
+                setShowScanner(false);
+                handleJoinGroup(data);
+              } else {
+                ToastAndroid.showWithGravity(
+                  'Invalid QR',
+                  ToastAndroid.SHORT,
+                  ToastAndroid.BOTTOM
+                );
+              }
+            }}
+          />
+        </View>
+      </Modal>
+    </>
+  );
+};
+
+const styles = StyleSheet.create({
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+  },
+  modalContainer: {
+    backgroundColor: colors.cardBackground.DEFAULT,
+    borderRadius: 24,
+    width: '100%',
+    maxWidth: 400,
+    borderWidth: 1,
+    borderColor: colors.cardBackground.DEFAULT,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.cardBackground.DEFAULT,
+  },
+  modalTitle: {
+    color: colors.white,
+    fontWeight: 'bold',
+    fontSize: 20,
+  },
+  closeButton: {
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalContent: {
+    padding: 20,
+  },
+  inputLabel: {
+    color: colors.white,
+    marginBottom: 12,
+    fontWeight: '500',
+  },
+  emailInput: {
+    backgroundColor: colors.cardBackground.dark,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.cardBackground.DEFAULT,
+  },
+  emailTextInput: {
+    flex: 1,
+    marginLeft: 12,
+    color: colors.white,
+    fontSize: 16,
+  },
+  orText: {
+    color: colors.white,
+    marginHorizontal: 'auto',
+    marginVertical: 8,
+    textAlign: 'center',
+  },
+  modalActions: {
+    flexDirection: 'row',
+    padding: 20,
+    gap: 12,
+  },
+  cancelButton: {
+    flex: 1,
+    backgroundColor: colors.background.DEFAULT,
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.gray.DEFAULT,
+  },
+  cancelButtonText: {
+    color: colors.white,
+    fontWeight: '600',
+    fontSize: 16,
+  },
+  confirmButton: {
+    flex: 1,
+    backgroundColor: colors.white,
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  confirmButtonDisabled: {
+    opacity: 0.5,
+  },
+  confirmButtonText: {
+    color: colors.black,
+    fontWeight: '600',
+    fontSize: 16,
+  },
+  qrButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.grayTextColor.DEFAULT,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    gap: 8,
+  },
+  qrButtonText: {
+    color: colors.white,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+});
+
+export default JoinCreateButton;
