@@ -1,13 +1,38 @@
-import { View, Text, TouchableOpacity } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ToastAndroid,
+  Modal,
+  Image,
+  StyleSheet,
+} from 'react-native';
 import React, { useEffect, useState } from 'react';
 import Button from '../common/Button';
-import { CornerDownRight, CornerUpRight, Eye, EyeOff, QrCode } from 'lucide-react-native';
-import { useEmbeddedSolanaWallet } from "@privy-io/expo";
-import { Connection } from "@solana/web3.js";
-import { checkAndCreateATA, checkBalance } from "@/utils/balance.utils";
-import { RPC_URL, USDC_MINT } from "@/constants/WalletConfig";
-import { useGetMyProfile } from "@/services/api/authApi";
-import colors from "@/assets/colors";
+import {
+  Copy,
+  CopyCheck,
+  CopyIcon,
+  CornerDownRight,
+  CornerUpRight,
+  Eye,
+  EyeOff,
+  LucideCopyCheck,
+  QrCode,
+} from 'lucide-react-native';
+import { useEmbeddedSolanaWallet } from '@privy-io/expo';
+import { Connection } from '@solana/web3.js';
+import { checkAndCreateATA, checkBalance } from '@/utils/balance.utils';
+import { RPC_URL, USDC_MINT } from '@/constants/WalletConfig';
+import { useGetMyProfile } from '@/services/api/authApi';
+import colors from '@/assets/colors';
+import QRScannerScreen from '../QrScannerScreen';
+import QRCode from 'react-native-qrcode-svg';
+import { Feather } from '@expo/vector-icons';
+import { deleteItemAsync } from 'expo-secure-store';
+import * as Clipboard from 'expo-clipboard';
+import WalletAddressDisplay from '../common/WalletAddressDisplay';
+import SendMoneyModal from './SendMoneyModal';
 
 const BalanceCard = () => {
   const [showBalance, setShowBalance] = useState(false);
@@ -26,7 +51,17 @@ const BalanceCard = () => {
     loadWalletBalance();
   }, [wallets]);
 
-  const { data: myProfile, isLoading: myProfileLoading } = useGetMyProfile();
+  const {
+    data: userProfile,
+    isLoading: myProfileLoading,
+    error: myProfileError,
+  } = useGetMyProfile();
+
+  const [receiveMoneyModalOpen, setReceiveMoneyModalOpen] = useState(false);
+  const [sendMoneyModalOpen, setSendMoneyModalOpen] = useState(false);
+  const [qrCodeData, setQrCodeData] = useState('-----');
+  const [copied, setCopied] = useState(false);
+
   return (
     <View
       style={{
@@ -97,15 +132,12 @@ const BalanceCard = () => {
           style={{
             fontSize: 12,
             color: colors.grayTextColor.DEFAULT,
+            marginBottom: 4,
           }}
         >
           WALLET
         </Text>
-        <Text style={{ fontSize: 14, color: colors.grayTextColor.dark }}>
-          {wallets && wallets.length > 0
-            ? wallets[0].address.slice(0, 32) + '...'
-            : 'No Wallet Connected'}
-        </Text>
+        <WalletAddressDisplay address={userProfile?.data?.wallet_public_key} />
       </View>
       <View
         style={{
@@ -118,7 +150,9 @@ const BalanceCard = () => {
         <Button
           title='Send'
           icon={<CornerUpRight size={18} />}
-          onPress={() => {}}
+          onPress={() => {
+            setSendMoneyModalOpen(true);
+          }}
           style={{
             flex: 1,
           }}
@@ -126,7 +160,10 @@ const BalanceCard = () => {
         <Button
           title='Receive'
           icon={<CornerDownRight size={18} />}
-          onPress={() => {}}
+          onPress={() => {
+            setReceiveMoneyModalOpen(true);
+            setQrCodeData(userProfile?.data?.wallet_public_key);
+          }}
           style={{
             flex: 1,
           }}
@@ -137,15 +174,359 @@ const BalanceCard = () => {
           onPress={() => {}}
           style={{
             justifyContent: 'center',
-            // width: 50,
-            // height: 50,
             paddingVertical: 16,
             paddingHorizontal: 16,
           }}
         />
       </View>
+
+      {/* Receive Money Modal */}
+      <Modal
+        visible={receiveMoneyModalOpen}
+        transparent={true}
+        animationType='fade'
+        onRequestClose={() => setReceiveMoneyModalOpen(false)}
+      >
+        <View style={styles.qrModalOverlay}>
+          <View style={styles.qrModalContent}>
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                width: '100%',
+                marginBottom: 24,
+              }}
+            >
+              <Text style={styles.qrModalTitle}>Your QR Code</Text>
+              <TouchableOpacity onPress={() => setReceiveMoneyModalOpen(false)}>
+                <Feather
+                  name='x'
+                  size={24}
+                  color={colors.grayTextColor.DEFAULT}
+                />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.qrCodeContainer}>
+              <QRCode
+                value={qrCodeData}
+                size={200}
+                backgroundColor='white'
+                color='black'
+              />
+            </View>
+            <WalletAddressDisplay address={qrCodeData} />
+            <View
+              style={{
+                backgroundColor: colors.cardBackground.DEFAULT,
+                display: 'flex',
+                gap: 10,
+                flexDirection: 'row',
+                paddingVertical: 10,
+                paddingHorizontal: 20,
+                borderRadius: 10,
+                width: '100%',
+              }}
+            >
+              {userProfile?.data?.profile_picture ? (
+                <View
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: 20,
+                    overflow: 'hidden',
+                    backgroundColor: colors.cardBackground.light,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Image
+                    source={{ uri: userProfile?.data?.profile_picture }}
+                    style={{ width: 36, height: 36 }}
+                  />
+                </View>
+              ) : (
+                <View
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: 20,
+                    backgroundColor: colors.cardBackground.light, // Blue avatar background
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: '#FFFFFF',
+                      fontSize: 16,
+                      fontWeight: '600',
+                    }}
+                  >
+                    {(userProfile?.data.fullname || userProfile?.data.username)
+                      .charAt(0)
+                      .toUpperCase()}
+                  </Text>
+                </View>
+              )}
+
+              <View>
+                <Text
+                  style={{
+                    color: colors.white,
+                    fontSize: 16,
+                    fontWeight: '500',
+                  }}
+                >
+                  {userProfile?.data.fullname || userProfile?.data.username}
+                </Text>
+                <Text
+                  style={{
+                    color: colors.grayTextColor.dark,
+                    fontSize: 14,
+                  }}
+                >
+                  {userProfile?.data.email}
+                </Text>
+              </View>
+            </View>
+            {/* Close Button */}
+            <TouchableOpacity
+              style={styles.qrCloseButton}
+              onPress={() => setReceiveMoneyModalOpen(false)}
+            >
+              <Text style={styles.qrCloseButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      <SendMoneyModal
+        visible={sendMoneyModalOpen}
+        setVisible={setSendMoneyModalOpen}
+      />
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  scrollView: {
+    flex: 1,
+    paddingHorizontal: 8,
+  },
+  profileCard: {
+    backgroundColor: colors.cardBackground.DEFAULT,
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 24,
+  },
+  profileHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  avatar: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: colors.grayTextColor.DEFAULT,
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 32,
+  },
+  avatarText: {
+    color: colors.white,
+    fontSize: 28,
+    fontWeight: 'bold',
+  },
+  profileInfo: {
+    marginLeft: 16,
+    flex: 1,
+  },
+  profileName: {
+    color: colors.white,
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 2,
+  },
+  profileDetail: {
+    color: colors.cardBackground.light,
+    fontSize: 14,
+    marginTop: 2,
+  },
+  editButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.cardBackground.light,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginBottom: 12,
+    gap: 8,
+  },
+  editButtonText: {
+    color: colors.white,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  qrButtonsRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  qrButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.cardBackground.light,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    gap: 8,
+  },
+  qrButtonText: {
+    color: colors.white,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  activitySection: {
+    marginBottom: 24,
+  },
+  sectionTitle: {
+    color: colors.grayTextColor.DEFAULT || '#9ca3af',
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 12,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  logoutButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'transparent',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.red.DEFAULT || '#ef4444',
+    gap: 8,
+  },
+  logoutText: {
+    color: colors.red.DEFAULT || '#ef4444',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  qrModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  qrModalContent: {
+    backgroundColor: colors.textInputBackground.DEFAULT,
+    borderRadius: 16,
+    padding: 24,
+    width: '100%',
+    alignItems: 'center',
+    maxHeight: '85%',
+    overflowY: 'auto',
+    gap: 16,
+  },
+  qrModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    marginBottom: 24,
+  },
+  qrModalTitle: {
+    color: colors.white,
+    fontSize: 22,
+    fontWeight: 'bold',
+  },
+  qrUserInfo: {
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  qrAvatar: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: colors.cardBackground.light,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+    overflow: 'hidden',
+  },
+  qrAvatarImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 30,
+  },
+  qrAvatarText: {
+    color: colors.white,
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  qrUsername: {
+    color: colors.white,
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  qrEmail: {
+    color: colors.grayTextColor.DEFAULT,
+    fontSize: 14,
+  },
+  qrCodeContainer: {
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 12,
+  },
+  qrIdContainer: {
+    width: '100%',
+    backgroundColor: colors.background.light,
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  qrIdLabel: {
+    color: colors.grayTextColor.dark,
+    fontSize: 12,
+    marginBottom: 4,
+  },
+  qrIdText: {
+    color: colors.white,
+    fontSize: 14,
+    fontFamily: 'monospace',
+  },
+  qrInstructions: {
+    color: colors.grayTextColor.DEFAULT || '#9ca3af',
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  qrCloseButton: {
+    backgroundColor: colors.cardBackground.light,
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+    borderRadius: 50,
+    width: '100%',
+  },
+  qrCloseButtonText: {
+    color: colors.white,
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+});
 
 export default BalanceCard;

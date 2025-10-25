@@ -2,10 +2,10 @@ import Constants from "expo-constants";
 import { PrivyProvider } from "@privy-io/expo";
 import { PrivyElements } from "@privy-io/expo/ui";
 import {
-  Inter_400Regular,
-  Inter_500Medium,
-  Inter_600SemiBold,
-} from "@expo-google-fonts/inter";
+  Outfit_400Regular,
+  Outfit_500Medium,
+  Outfit_600SemiBold,
+} from '@expo-google-fonts/outfit';
 import { useFonts } from "expo-font";
 import { useColorScheme } from "react-native";
 import { Slot } from "expo-router";
@@ -13,9 +13,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 export default function RootLayout() {
   useFonts({
-    Inter_400Regular,
-    Inter_500Medium,
-    Inter_600SemiBold,
+   Outfit_400Regular,
+   Outfit_500Medium,
+   Outfit_600SemiBold,
   });
   const colorScheme = useColorScheme() ?? "dark";
   return (

@@ -1,6 +1,13 @@
 import React from 'react';
-import { Modal, View, Text, TextInput, TouchableOpacity } from 'react-native';
-import { FontAwesome } from '@expo/vector-icons';
+import {
+  Modal,
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+} from 'react-native';
+import { FontAwesome, Feather } from '@expo/vector-icons';
 import colors from '@/assets/colors';
 
 interface EditExpenseModalProps {
@@ -47,226 +54,228 @@ const EditExpenseModal: React.FC<EditExpenseModalProps> = ({
 
   return (
     <Modal
-      animationType='slide'
+      animationType='fade'
       transparent={true}
       visible={editModalVisible}
       onRequestClose={() => setEditModalVisible(!editModalVisible)}
     >
-      <View
-        style={{
-          flex: 1,
-          justifyContent: 'center',
-          alignItems: 'center',
-          backgroundColor: colors.black + 'aa',
-        }}
-      >
-        <View
-          style={{
-            backgroundColor: colors.background.light,
-            padding: 20,
-            borderRadius: 10,
-            width: '80%',
-            gap: 10,
-          }}
-        >
-          <View
-            style={{
-              display: 'flex',
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-            }}
-          >
-            <Text
-              style={{
-                color: 'white',
-                fontSize: 18,
-                fontWeight: '600',
-                marginBottom: 10,
-              }}
-            >
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContainer}>
+          {/* Modal Header */}
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>
               {canEdit ? 'Edit Expense' : 'Expense Details'}
             </Text>
-          </View>
-          {canEdit ? (
-            <>
-              <TextInput
-                style={{
-                  height: 40,
-                  borderColor: 'gray',
-                  borderWidth: 1,
-                  marginBottom: 10,
-                  color: 'white',
-                  borderRadius: 5,
-                  paddingHorizontal: 10,
-                }}
-                placeholder='e.g., Dinner at restaurant'
-                placeholderTextColor={colors.gray.DEFAULT}
-                value={expense_title}
-                onChangeText={setExpenseTitle}
-              />
-              <TextInput
-                style={{
-                  height: 40,
-                  borderColor: 'gray',
-                  borderWidth: 1,
-                  marginBottom: 10,
-                  color: 'white',
-                  borderRadius: 5,
-                  paddingHorizontal: 10,
-                }}
-                placeholder='$ 0.00'
-                placeholderTextColor={colors.gray.DEFAULT}
-                value={amount}
-                onChangeText={setAmount}
-                keyboardType='numeric'
-              />
-              <View style={{ marginBottom: 10 }}>
-                <View
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    marginBottom: 8,
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: colors.gray.DEFAULT,
-                      fontSize: 16,
-                    }}
-                  >
-                    Split Between
-                  </Text>
-                  <TouchableOpacity
-                    style={{
-                      marginLeft: 'auto',
-                    }}
-                    onPress={() =>
-                      setSplitBetween(members.map((m: any) => m._id))
-                    }
-                  >
-                    <Text
-                      style={{
-                        color: colors.primary.DEFAULT,
-                      }}
-                    >
-                      Select all
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-                {members.map((member: any) => (
-                  <TouchableOpacity
-                    key={member._id}
-                    style={{
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      marginBottom: 5,
-                    }}
-                    onPress={() => {
-                      if (member._id !== paid_by) {
-                        setSplitBetween((prev) =>
-                          prev.includes(member._id)
-                            ? prev.filter((id) => id !== member._id)
-                            : [...prev, member._id]
-                        );
-                      }
-                    }}
-                  >
-                    <View
-                      style={{
-                        width: 20,
-                        height: 20,
-                        borderRadius: 10,
-                        borderWidth: 2,
-                        borderColor: colors.gray.DEFAULT,
-                        marginRight: 10,
-                        backgroundColor: split_between.includes(member._id)
-                          ? colors.primary.DEFAULT
-                          : 'transparent',
-                      }}
-                    />
-                    <Text style={{ color: 'white' }}>
-                      {member.fullname || member.username}
-                    </Text>
-                    {paid_by === member._id && (
-                      <View
-                        style={{
-                          backgroundColor: colors.green[700],
-                          borderRadius: 8,
-                          paddingHorizontal: 8,
-                          paddingVertical: 1,
-                          marginLeft: 8,
-                        }}
-                      >
-                        <Text
-                          style={{
-                            color: colors.transparent,
-                          }}
-                        >
-                          Payer
-                        </Text>
-                      </View>
-                    )}
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </>
-          ) : (
-            <>
-              <Text style={{ color: 'white', marginBottom: 10 }}>
-                Title: {expense_title}
-              </Text>
-              <Text style={{ color: 'white', marginBottom: 10 }}>
-                Amount: ${Number(amount).toFixed(2)}
-              </Text>
-              <Text style={{ color: 'white', marginBottom: 10 }}>
-                Paid by:{' '}
-                {members.find((m: any) => m._id === paid_by)?.fullname ||
-                  members.find((m: any) => m._id === paid_by)?.username}
-              </Text>
-              <Text style={{ color: 'white', marginBottom: 10 }}>
-                Split between:{' '}
-                {split_between
-                  .map(
-                    (id: string) =>
-                      members.find((m: any) => m._id === id)?.fullname ||
-                      members.find((m: any) => m._id === id)?.username
-                  )
-                  .join(', ')}
-              </Text>
-            </>
-          )}
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-            }}
-          >
             <TouchableOpacity
-              style={{
-                backgroundColor: colors.gray[600],
-                padding: 10,
-                borderRadius: 5,
-                flex: 1,
-                marginRight: 5,
-              }}
               onPress={() => {
                 setEditModalVisible(false);
                 resetForm();
               }}
+              style={styles.closeButton}
+              activeOpacity={0.7}
             >
-              <Text style={{ color: 'white', textAlign: 'center' }}>Close</Text>
+              <Feather
+                name='x'
+                size={24}
+                color={colors.grayTextColor.DEFAULT}
+              />
+            </TouchableOpacity>
+          </View>
+
+          {/* Modal Content */}
+          <View style={styles.modalContent}>
+            {canEdit ? (
+              <>
+                {/* Expense Title */}
+                <View style={{ marginBottom: 20 }}>
+                  <Text style={styles.inputLabel}>Expense Title *</Text>
+                  <TextInput
+                    style={styles.textInput}
+                    placeholder='e.g., Dinner at restaurant'
+                    placeholderTextColor={colors.grayTextColor.dark}
+                    value={expense_title}
+                    onChangeText={setExpenseTitle}
+                  />
+                </View>
+
+                {/* Amount */}
+                <View style={{ marginBottom: 20 }}>
+                  <Text style={styles.inputLabel}>Amount *</Text>
+                  <TextInput
+                    style={styles.textInput}
+                    placeholder='$ 0.00'
+                    placeholderTextColor={colors.grayTextColor.dark}
+                    value={amount}
+                    onChangeText={setAmount}
+                    keyboardType='numeric'
+                  />
+                </View>
+
+                {/* Split Between */}
+                <View style={{ marginBottom: 20 }}>
+                  <View style={styles.splitHeader}>
+                    <Text style={styles.inputLabel}>Split Between</Text>
+                    <TouchableOpacity
+                      onPress={() =>
+                        setSplitBetween(members.map((m: any) => m._id))
+                      }
+                    >
+                      <Text style={styles.selectAllText}>Select all</Text>
+                    </TouchableOpacity>
+                  </View>
+                  {members.map((member: any) => (
+                    <TouchableOpacity
+                      key={member._id}
+                      style={styles.memberItem}
+                      onPress={() => {
+                        if (member._id !== paid_by) {
+                          setSplitBetween(
+                            split_between.includes(member._id)
+                              ? split_between.filter((id) => id !== member._id)
+                              : [...split_between, member._id]
+                          );
+                        }
+                      }}
+                    >
+                      <View
+                        style={{
+                          width: 24,
+                          height: 24,
+                          borderRadius: 4,
+                          borderWidth: 2,
+                          borderColor: split_between.includes(member._id)
+                            ? colors.primary.DEFAULT
+                            : colors.grayTextColor.dark,
+                          backgroundColor: split_between.includes(member._id)
+                            ? colors.primary.DEFAULT
+                            : 'transparent',
+                          marginRight: 12,
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                        }}
+                      >
+                        {split_between.includes(member._id) && (
+                          <Feather
+                            name='check'
+                            size={16}
+                            color={colors.black}
+                          />
+                        )}
+                      </View>
+                      <View
+                        style={{
+                          flex: 1,
+                          display: 'flex',
+                          flexDirection: 'row',
+                          gap: 8,
+                        }}
+                      >
+                        <Text
+                          style={{
+                            color: colors.white,
+                            fontSize: 16,
+                            marginBottom: 2,
+                          }}
+                        >
+                          {member.fullname || member.username}
+                        </Text>
+                        {paid_by === member._id && (
+                          <View
+                            style={{
+                              backgroundColor: colors.green[700],
+                              borderRadius: 8,
+                              paddingHorizontal: 8,
+                              paddingVertical: 1,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              flexWrap: 'nowrap',
+                            }}
+                          >
+                            <Text
+                              style={{
+                                lineHeight: 20,
+                                color: colors.white,
+                                fontSize: 12,
+                                flex: 1,
+                                minWidth: 30,
+                              }}
+                            >
+                              Payer
+                            </Text>
+                          </View>
+                        )}
+                      </View>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </>
+            ) : (
+              <>
+                <Text
+                  style={{
+                    color: colors.white,
+                    marginBottom: 10,
+                    fontSize: 16,
+                  }}
+                >
+                  Title: {expense_title}
+                </Text>
+                <Text
+                  style={{
+                    color: colors.white,
+                    marginBottom: 10,
+                    fontSize: 16,
+                  }}
+                >
+                  Amount: ${Number(amount).toFixed(2)}
+                </Text>
+                <Text
+                  style={{
+                    color: colors.white,
+                    marginBottom: 10,
+                    fontSize: 16,
+                  }}
+                >
+                  Paid by:{' '}
+                  {members.find((m: any) => m._id === paid_by)?.fullname ||
+                    members.find((m: any) => m._id === paid_by)?.username}
+                </Text>
+                <Text
+                  style={{
+                    color: colors.white,
+                    marginBottom: 10,
+                    fontSize: 16,
+                  }}
+                >
+                  Split between:{' '}
+                  {split_between
+                    .map(
+                      (id: string) =>
+                        members.find((m: any) => m._id === id)?.fullname ||
+                        members.find((m: any) => m._id === id)?.username
+                    )
+                    .join(', ')}
+                </Text>
+              </>
+            )}
+          </View>
+
+          {/* Modal Actions */}
+          <View style={styles.modalActions}>
+            <TouchableOpacity
+              onPress={() => {
+                setEditModalVisible(false);
+                resetForm();
+              }}
+              style={styles.cancelButton}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.cancelButtonText}>Close</Text>
             </TouchableOpacity>
             {canEdit && (
               <>
                 <TouchableOpacity
-                  style={{
-                    backgroundColor: colors.primary.DEFAULT,
-                    padding: 10,
-                    borderRadius: 5,
-                    flex: 1,
-                    marginRight: 5,
-                  }}
                   onPress={() => {
                     handleUpdateExpenseSubmit({
                       expense_title,
@@ -275,22 +284,24 @@ const EditExpenseModal: React.FC<EditExpenseModalProps> = ({
                       split_between,
                     });
                   }}
+                  style={[
+                    styles.confirmButton,
+                    (!expense_title.trim() || !amount.trim()) &&
+                      styles.confirmButtonDisabled,
+                  ]}
+                  activeOpacity={0.8}
+                  disabled={!expense_title.trim() || !amount.trim()}
                 >
-                  <Text style={{ color: 'white', textAlign: 'center' }}>
-                    Update
-                  </Text>
+                  <Text style={styles.confirmButtonText}>Update</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={{
-                    backgroundColor: colors.red[600],
-                    padding: 10,
-                    borderRadius: 5,
-                  }}
+                  style={styles.deleteButton}
                   onPress={() => {
                     handleDeleteExpenseSubmit(editingExpenseId!, expense_title);
                   }}
+                  activeOpacity={0.8}
                 >
-                  <FontAwesome name='trash' size={20} color='white' />
+                  <FontAwesome name='trash' size={20} color={colors.white} />
                 </TouchableOpacity>
               </>
             )}
@@ -300,5 +311,119 @@ const EditExpenseModal: React.FC<EditExpenseModalProps> = ({
     </Modal>
   );
 };
+
+const styles = StyleSheet.create({
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+  },
+  modalContainer: {
+    backgroundColor: colors.cardBackground.DEFAULT,
+    borderRadius: 24,
+    width: '100%',
+    maxWidth: 400,
+    borderWidth: 1,
+    borderColor: colors.cardBackground.DEFAULT,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.cardBackground.DEFAULT,
+  },
+  modalTitle: {
+    color: colors.white,
+    fontWeight: 'bold',
+    fontSize: 20,
+  },
+  closeButton: {
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalContent: {
+    padding: 20,
+  },
+  inputLabel: {
+    color: colors.grayTextColor.DEFAULT,
+    fontWeight: '500',
+    fontSize: 14,
+    marginBottom: 8,
+  },
+  textInput: {
+    backgroundColor: colors.textInputBackground.DEFAULT,
+    color: colors.white,
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: colors.gray[600] || '#475569',
+  },
+  splitHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  selectAllText: {
+    color: colors.primary.DEFAULT,
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  memberItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+  },
+  modalActions: {
+    flexDirection: 'row',
+    padding: 20,
+    gap: 12,
+  },
+  cancelButton: {
+    flex: 1,
+    backgroundColor: colors.textInputBackground.DEFAULT,
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.gray.DEFAULT,
+  },
+  cancelButtonText: {
+    color: colors.white,
+    fontWeight: '600',
+    fontSize: 16,
+  },
+  confirmButton: {
+    flex: 1,
+    backgroundColor: colors.white,
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  confirmButtonDisabled: {
+    backgroundColor: colors.grayTextColor.DEFAULT,
+    opacity: 0.5,
+  },
+  confirmButtonText: {
+    color: colors.black,
+    fontWeight: '600',
+    fontSize: 16,
+  },
+  deleteButton: {
+    backgroundColor: colors.red[600],
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+});
 
 export default EditExpenseModal;

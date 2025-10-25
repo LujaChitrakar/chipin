@@ -11,19 +11,16 @@ import {
   Modal,
   TouchableOpacity,
   StyleSheet,
-  ActivityIndicator,
 } from 'react-native';
 import {
   useCreateGroup,
-  useGetMyGroups,
   useJoinGroupByGroupCode,
 } from '@/services/api/groupApi';
-import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { useGetMyFriends } from '@/services/api/friendsApi';
-import { Regex, X } from 'lucide-react-native';
 import { useQueryClient } from '@tanstack/react-query';
-import LoadingScreen from '@/components/splash/LoadingScreen';
 import QRScannerScreen from '../QrScannerScreen';
+import JoinGroupModal from './JoinGroupModal';
 
 const JoinCreateButton = () => {
   const { mutate: createGroup, isPending: creatingGroup } = useCreateGroup();
@@ -142,96 +139,6 @@ const JoinCreateButton = () => {
         />
       </View>
 
-      {/* Join Group Modal */}
-      <Modal
-        visible={joinGroupModal}
-        transparent
-        animationType='fade'
-        onRequestClose={() => setShowJoinGroupModal(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            {/* Modal Header */}
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Join Group</Text>
-              <TouchableOpacity
-                onPress={() => setShowJoinGroupModal(false)}
-                style={styles.closeButton}
-                activeOpacity={0.7}
-              >
-                <X size={24} color={colors.gray.DEFAULT} />
-              </TouchableOpacity>
-            </View>
-
-            {joiningGroup ? (
-              <View>
-                <LoadingScreen />
-              </View>
-            ) : (
-              <View style={styles.modalContent}>
-                <Text style={styles.inputLabel}>Group Code</Text>
-                <View style={styles.emailInput}>
-                  <Regex size={20} color={colors.gray.DEFAULT} />
-                  <TextInput
-                    placeholder='Enter Group code'
-                    placeholderTextColor={colors.gray.DEFAULT}
-                    value={groupIdToJoin}
-                    onChangeText={setGroupIdToJoin}
-                    keyboardType='email-address'
-                    autoCapitalize='none'
-                    style={styles.emailTextInput}
-                  />
-                </View>
-                <Text style={styles.orText}>Or</Text>
-
-                <TouchableOpacity
-                  onPress={() => {
-                    setShowScanner(true);
-                  }}
-                  style={styles.qrButton}
-                >
-                  <MaterialCommunityIcons
-                    name='qrcode'
-                    size={20}
-                    color={colors.white}
-                  />
-                  <Text style={styles.qrButtonText}>Scan QR</Text>
-                </TouchableOpacity>
-              </View>
-            )}
-            {/* Modal Content */}
-
-            {/* Modal Actions */}
-            <View style={styles.modalActions}>
-              <TouchableOpacity
-                onPress={() => setShowJoinGroupModal(false)}
-                style={styles.cancelButton}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => {
-                  handleJoinGroup(groupIdToJoin);
-                }}
-                style={[
-                  styles.confirmButton,
-                  !groupIdToJoin.trim() && styles.confirmButtonDisabled,
-                ]}
-                activeOpacity={0.8}
-                disabled={!groupIdToJoin.trim() || joiningGroup}
-              >
-                {joiningGroup ? (
-                  <ActivityIndicator size='small' color='white' />
-                ) : (
-                  <Text style={styles.confirmButtonText}>Add Friend</Text>
-                )}
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
-
       {/* Create Group Dialog */}
       <Modal
         visible={showCreateDialog}
@@ -277,7 +184,11 @@ const JoinCreateButton = () => {
                 Create New Group
               </Text>
               <TouchableOpacity onPress={handleCancel}>
-                <Feather name='x' size={24} color={colors.grayTextColor.DEFAULT} />
+                <Feather
+                  name='x'
+                  size={24}
+                  color={colors.grayTextColor.DEFAULT}
+                />
               </TouchableOpacity>
             </View>
 
@@ -479,6 +390,13 @@ const JoinCreateButton = () => {
           </View>
         </View>
       </Modal>
+
+      <JoinGroupModal
+        visible={joinGroupModal}
+        setVisible={setShowJoinGroupModal}
+      />
+
+      {/* Join Group Dialog */}
       <Modal
         visible={showScanner}
         transparent

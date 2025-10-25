@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { axiosInstance } from './apiConstants';
 
 export const useGetRecentActivities = ({
@@ -16,6 +16,27 @@ export const useGetRecentActivities = ({
       const response = await axiosInstance.get('/recent/activities', {
         params: { page, limit, userId: friendId },
       });
+      return response?.data;
+    },
+  });
+};
+
+export const useCreateActivity = () => {
+  return useMutation({
+    mutationFn: async function (data) {
+      const response = await axiosInstance.post('/recent/activity', data);
+      return response?.data;
+    },
+  });
+};
+
+export const useCreateMoneyLentActivity = () => {
+  return useMutation({
+    mutationFn: async function (data: any) {
+      const response = await axiosInstance.post(
+        '/recent/activity/moneyLent',
+        data
+      );
       return response?.data;
     },
   });

@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   Modal,
   ToastAndroid,
+  Image,
 } from 'react-native';
 import colors from '@/assets/colors';
 import { useEmbeddedSolanaWallet, usePrivy } from '@privy-io/expo';
@@ -71,7 +72,7 @@ const GroupTabContent = ({ activeTab }: { activeTab: string }) => {
                 Alert.alert('Success', 'Payment settled successfully.');
                 setSettlingMemberId(member?._id);
                 queryClient.invalidateQueries({
-                  queryKey: [groupId],
+                  queryKey: [groupId, 'groupById'],
                 });
               },
               onError: (error: any) => {
@@ -145,7 +146,7 @@ const GroupTabContent = ({ activeTab }: { activeTab: string }) => {
           setEditModalVisible(false);
           resetForm();
           queryClient.invalidateQueries({
-            queryKey: ['group', groupId],
+            queryKey: [groupId, 'groupById'],
           });
           ToastAndroid.showWithGravity(
             'Expense updated successfully',
@@ -182,7 +183,7 @@ const GroupTabContent = ({ activeTab }: { activeTab: string }) => {
               {
                 onSuccess: () => {
                   queryClient.invalidateQueries({
-                    queryKey: ['group', groupId],
+                    queryKey: [groupId, 'groupById'],
                   });
                   ToastAndroid.show('Expense deleted', ToastAndroid.SHORT);
                   setEditModalVisible(false);
@@ -363,28 +364,48 @@ const GroupTabContent = ({ activeTab }: { activeTab: string }) => {
                       gap: 10,
                     }}
                   >
-                    <View
-                      style={{
-                        width: 36,
-                        height: 36,
-                        borderRadius: 20,
-                        backgroundColor: colors.cardBackground.light, // Blue avatar background
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                    >
-                      <Text
+                    {member?.profile_picture ? (
+                      <View
                         style={{
-                          color: '#FFFFFF',
-                          fontSize: 16,
-                          fontWeight: '600',
+                          width: 36,
+                          height: 36,
+                          borderRadius: 20,
+                          overflow: 'hidden',
+                          backgroundColor: colors.cardBackground.light,
+                          alignItems: 'center',
+                          justifyContent: 'center',
                         }}
                       >
-                        {(member.fullname || member.username)
-                          .charAt(0)
-                          .toUpperCase()}
-                      </Text>
-                    </View>
+                        <Image
+                          source={{ uri: member.profile_picture }}
+                          style={{ width: 36, height: 36 }}
+                        />
+                      </View>
+                    ) : (
+                      <View
+                        style={{
+                          width: 36,
+                          height: 36,
+                          borderRadius: 20,
+                          backgroundColor: colors.cardBackground.light, // Blue avatar background
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <Text
+                          style={{
+                            color: '#FFFFFF',
+                            fontSize: 16,
+                            fontWeight: '600',
+                          }}
+                        >
+                          {(member.fullname || member.username)
+                            .charAt(0)
+                            .toUpperCase()}
+                        </Text>
+                      </View>
+                    )}
+
                     <View>
                       <Text
                         style={{
@@ -499,7 +520,9 @@ const GroupTabContent = ({ activeTab }: { activeTab: string }) => {
                   paddingVertical: 12,
                 }}
                 onPress={() => {
-                  router.push(`/tabs/friends/${member._id}`);
+                  if (member._id !== myProfile?.data?._id) {
+                    router.push(`/tabs/friends/${member._id}`);
+                  }
                 }}
               >
                 <View
@@ -509,28 +532,48 @@ const GroupTabContent = ({ activeTab }: { activeTab: string }) => {
                     gap: 10,
                   }}
                 >
-                  <View
-                    style={{
-                      width: 40,
-                      height: 40,
-                      borderRadius: 20,
-                      backgroundColor: colors.cardBackground.light, // Blue avatar background
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <Text
+                  {member?.profile_picture ? (
+                    <View
                       style={{
-                        color: colors.white,
-                        fontSize: 16,
-                        fontWeight: '600',
+                        width: 40,
+                        height: 40,
+                        borderRadius: 20,
+                        overflow: 'hidden',
+                        backgroundColor: colors.cardBackground.light,
+                        alignItems: 'center',
+                        justifyContent: 'center',
                       }}
                     >
-                      {(member.fullname || member.username)
-                        .charAt(0)
-                        .toUpperCase()}
-                    </Text>
-                  </View>
+                      <Image
+                        source={{ uri: member.profile_picture }}
+                        style={{ width: 40, height: 40 }}
+                      />
+                    </View>
+                  ) : (
+                    <View
+                      style={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: 20,
+                        backgroundColor: colors.cardBackground.light, // Blue avatar background
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <Text
+                        style={{
+                          color: colors.white,
+                          fontSize: 16,
+                          fontWeight: '600',
+                        }}
+                      >
+                        {(member.fullname || member.username)
+                          .charAt(0)
+                          .toUpperCase()}
+                      </Text>
+                    </View>
+                  )}
+
                   <View>
                     <Text
                       style={{
@@ -540,6 +583,14 @@ const GroupTabContent = ({ activeTab }: { activeTab: string }) => {
                       }}
                     >
                       {member.fullname || member.username}
+
+                      <Text
+                        style={{
+                          color: colors.cardBackground.light,
+                        }}
+                      >
+                        {member._id === myProfile?.data?._id && '  (You)'}
+                      </Text>
                     </Text>
                     <Text
                       style={{
@@ -552,18 +603,20 @@ const GroupTabContent = ({ activeTab }: { activeTab: string }) => {
                   </View>
                 </View>
 
-                <View
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 4,
-                    backgroundColor: colors.white,
-                    padding: 6,
-                    borderRadius: 50,
-                  }}
-                >
-                  <MoveUpRight size={24} />
-                </View>
+                {member._id !== myProfile?.data?._id && (
+                  <View
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 4,
+                      backgroundColor: colors.white,
+                      padding: 6,
+                      borderRadius: 50,
+                    }}
+                  >
+                    <MoveUpRight size={24} />
+                  </View>
+                )}
               </TouchableOpacity>
               <View
                 style={{

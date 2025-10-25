@@ -1,8 +1,8 @@
 import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import colors from '@/assets/colors';
 import GroupCard from './GroupCard';
-import { useRouter } from "expo-router";
+import { useRouter } from 'expo-router';
 
 const GroupTabs = ({
   myGroups,
@@ -15,17 +15,22 @@ const GroupTabs = ({
   };
   myGroupsLoading: boolean;
 }) => {
+  console.log(
+    'MY GROUPS FROM TABS COMPONENT:::',
+    JSON.stringify(myGroups, null, 2)
+  );
   const router = useRouter();
 
   const [activeTab, setActiveTab] = useState<'active' | 'settled'>('active');
 
-  const groupsList = myGroups?.data || [];
-  const activeGroups = groupsList.filter(
-    (g: any) => !(g.settled === true || g.status === 'settled')
-  );
-  const settledGroups = groupsList.filter(
-    (g: any) => g.settled === true || g.status === 'settled'
-  );
+  const [activeGroups, setActiveGroups] = useState<any[]>([]);
+  const [settledGroups, setSettledGroups] = useState<any[]>([]);
+
+  useEffect(() => {
+    const groupsList = myGroups?.data || [];
+    setActiveGroups(groupsList.filter((g: any) => !(g.settled === true)));
+    setSettledGroups(groupsList.filter((g: any) => g.settled === true));
+  }, [myGroups]);
 
   return (
     <View>

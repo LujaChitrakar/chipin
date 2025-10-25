@@ -5,10 +5,17 @@ import LoadingScreen from './splash/LoadingScreen';
 
 interface QRScannerScreenProps {
   onScan: (data: string) => void;
-  styles: any;
+  styles?: any;
+  laserColor?: string;
+  showFrame?: boolean;
 }
 
-const QRScannerScreen = ({ onScan }: QRScannerScreenProps) => {
+const QRScannerScreen = ({
+  onScan,
+  styles,
+  laserColor = 'red',
+  showFrame = true,
+}: QRScannerScreenProps) => {
   const [hasPermission, setHasPermission] = useState(false);
   useEffect(() => {
     const requestCameraPermission = async () => {
@@ -47,8 +54,8 @@ const QRScannerScreen = ({ onScan }: QRScannerScreenProps) => {
       }}
       scanBarcode
       onReadCode={(event: any) => onScan(event.nativeEvent.codeStringValue)}
-      showFrame={true}
-      laserColor='red'
+      showFrame={showFrame || true}
+      laserColor={laserColor || 'red'}
       frameColor='white'
       zoomMode='off'
     />

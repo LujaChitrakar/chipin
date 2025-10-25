@@ -124,14 +124,14 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   qrCloseButton: {
-    backgroundColor: colors.white,
+    backgroundColor: colors.cardBackground.light,
     paddingVertical: 12,
     paddingHorizontal: 32,
     borderRadius: 8,
     width: '100%',
   },
   qrCloseButtonText: {
-    color: colors.black,
+    color: colors.white,
     fontSize: 16,
     fontWeight: '600',
     textAlign: 'center',

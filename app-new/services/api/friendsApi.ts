@@ -55,11 +55,11 @@ export const useGetMyFriendRequests = ({
 export const useGetMyFriends = ({
   page,
   limit,
-  q
+  q,
 }: {
   page: number;
   limit: number;
-  q?: string,
+  q?: string;
 }) => {
   return useQuery({
     queryKey: ['my-friends', page, limit, q],
@@ -91,4 +91,18 @@ export const useGetUserById = (friendId: string) => {
       return response?.data;
     },
   });
-}
+};
+
+export const getUserByWalletAddress = async (wallet_public_key: string) => {
+  try {
+    const response = await axiosInstance.post(`/user/profile/searchByWallet`, {
+      wallet_public_key,
+    });
+
+    if (response?.data?.success) return response?.data?.data;
+    return null;
+  } catch (err: any) {
+    console.log('ERR GETTING USER BY WALLET:', err.response?.data);
+    return null;
+  }
+};

@@ -1,7 +1,7 @@
 import colors from '@/assets/colors';
-import { router } from "expo-router";
+import { router } from 'expo-router';
 import { MoveUpRight } from 'lucide-react-native';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const FriendCard = ({ friend }: { friend: any }) => {
   const toBePaid = friend.toBePaid;
@@ -9,15 +9,53 @@ const FriendCard = ({ friend }: { friend: any }) => {
   let amount = toBeReceived - toBePaid;
 
   return (
-    <TouchableOpacity style={styles.friendCard} activeOpacity={0.7} onPress={() => {
-      router.push(`/tabs/friends/${friend._id}`);
-    }}>
+    <TouchableOpacity
+      style={styles.friendCard}
+      activeOpacity={0.7}
+      onPress={() => {
+        router.push(`/tabs/friends/${friend._id}`);
+      }}
+    >
       {/* Avatar */}
-      <View style={styles.avatar}>
-        <Text style={styles.avatarText}>
-          {friend?.username?.charAt(0).toUpperCase() || 'U'}
-        </Text>
-      </View>
+      {friend?.profile_picture ? (
+        <View
+          style={{
+            width: 40,
+            height: 40,
+            borderRadius: 20,
+            overflow: 'hidden',
+            backgroundColor: colors.cardBackground.light,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Image
+            source={{ uri: friend.profile_picture }}
+            style={{ width: 40, height: 40 }}
+          />
+        </View>
+      ) : (
+        <View
+          style={{
+            width: 40,
+            height: 40,
+            borderRadius: 20,
+            backgroundColor: colors.cardBackground.light, // Blue avatar background
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Text
+            style={{
+              color: colors.white,
+              fontSize: 16,
+              fontWeight: '600',
+            }}
+          >
+            {(friend.fullname || friend.username).charAt(0).toUpperCase()}
+          </Text>
+        </View>
+      )}
 
       {/* Friend Info */}
       <View style={styles.friendInfo}>
@@ -97,6 +135,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
+    gap: 8,
     borderColor: colors.cardBackground.DEFAULT,
   },
   avatar: {

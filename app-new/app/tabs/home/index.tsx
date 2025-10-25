@@ -40,7 +40,7 @@ const HomePage = () => {
           <BalanceCard />
           <SpendingCard />
           <SaveMoneyCard />
-          <RecentActivitiesList />
+          <RecentActivitiesList pageSize={4} loadInfinite={false} />
         </View>
       </ScrollView>
     </ScreenContainer>

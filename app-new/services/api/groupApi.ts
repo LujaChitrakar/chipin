@@ -36,7 +36,7 @@ export const useGetMyGroups = ({
 
 export const useGetGroupById = (groupId: string) => {
   return useQuery({
-    queryKey: [groupId],
+    queryKey: [groupId, "groupById"],
     queryFn: async () => {
       const response = await axiosInstance.get(`/group/${groupId}`);
       return response?.data;
@@ -62,6 +62,17 @@ export const useJoinGroupByGroupCode = () => {
       const response = await axiosInstance.post(`/group/${groupCode}/join`);
       return response?.data;
     },
+  });
+};
+
+export const useSearchGroupByGroupCode = (groupCode: string) => {
+  return useQuery({
+    queryFn: async () => {
+      const response = await axiosInstance.get(`/group/${groupCode}/find`);
+      console.log("RESPONSE:::", response?.data);
+      return response?.data;
+    },
+    queryKey: [groupCode, "groupByCode"]
   });
 };
 

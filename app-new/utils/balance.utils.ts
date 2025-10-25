@@ -49,25 +49,21 @@ export const calculateGroupBalance = (groupData: any, userId: string) => {
   let youAreOwed = 0;
   let youOwe = 0;
 
-  // Calculate total owed and owed to user
-  groupData.expenses.forEach((expense: any) => {
-    const splitAmount = expense.amount / expense.split_between.length;
-    const paidBy = expense.paid_by;
-    const isUserPaid = paidBy === userId;
-    const userInSplit = expense.split_between.includes(userId);
-    if (expense.paid_by === userId) {
-      // User paid, others owe user
-      expense.split_between.forEach((memberId: string) => {
-        if (memberId !== userId) {
-          youAreOwed += splitAmount;
-        }
-      });
-    } else if (userInSplit) {
-      youOwe += splitAmount;
+  if (!groupData?.balances[userId]) {
+    return {
+      youAreOwed: 0,
+      youOwe: 0,
+      netBalance: 0,
+    };
+  }
+  Object.values(groupData.balances[userId]).forEach((balance: any) => {
+    if (balance > 0) {
+      youAreOwed += balance;
+    } else {
+      youOwe += Math.abs(balance);
     }
   });
 
-  // Calculate net balance
   const netBalance = youAreOwed - youOwe;
 
   return {
@@ -77,11 +73,10 @@ export const calculateGroupBalance = (groupData: any, userId: string) => {
   };
 };
 
-
 export const getNetBalanceFromIndividualBalances = (balances: any) => {
-  console.log("BALANCES::::", balances);
+  console.log('BALANCES::::', balances);
   let net = Object.values(balances).reduce((acc: number, curr: any) => {
     return acc + curr;
   }, 0);
   return net;
-}
+};

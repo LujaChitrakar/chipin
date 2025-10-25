@@ -58,7 +58,10 @@ const RecentActivitiesList = ({
       case 'ADD_SAVING':
         return `Added saving`;
       case 'LOG_IN':
-        return `Logged In`;
+      case 'LENT_MONEY':
+        return `Lent Money`;
+      case 'BORROWED_MONEY':
+        return `Borrowed Money`;
       default:
         return `Performed an`;
     }
@@ -105,6 +108,8 @@ const RecentActivitiesList = ({
       case 'DELETE_EXPENSE':
         return activity?.group.name;
       case 'SETTLE_PAYMENT':
+      case 'BORROWED_MONEY':
+      case 'LENT_MONEY':
         return (
           activity?.otherUser.fullname ||
           activity?.otherUser.username ||
@@ -203,7 +208,11 @@ const RecentActivitiesList = ({
   };
 
   return (
-    <View>
+    <View
+      style={{
+        paddingHorizontal: 8,
+      }}
+    >
       <View
         style={{
           flexDirection: 'row',
@@ -249,13 +258,13 @@ const RecentActivitiesList = ({
             Error loading recent activities.
           </Text>
         )}
-        {
-          !isLoading && !isError && data?.pagination?.totalCount === 0 && (
-            <Text style={{ color: colors.grayTextColor.DEFAULT, textAlign: 'center' }}>
-              No recent activities found.
-            </Text>
-          )
-        }
+        {!isLoading && !isError && data?.pagination?.totalCount === 0 && (
+          <Text
+            style={{ color: colors.grayTextColor.DEFAULT, textAlign: 'center' }}
+          >
+            No recent activities found.
+          </Text>
+        )}
         {!isLoading &&
           !isError &&
           data?.data?.map((activity: any) => (

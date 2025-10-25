@@ -25,6 +25,9 @@ import { launchImageLibrary, launchCamera } from 'react-native-image-picker';
 import { useQueryClient } from '@tanstack/react-query';
 import { useSendFriendRequest } from '@/services/api/friendsApi';
 import QRScannerScreen from '@/components/QrScannerScreen';
+import Button from '@/components/common/Button';
+import { LogOut, SquarePen } from 'lucide-react-native';
+import RecentActivitiesList from "@/components/home/ActivitiesList";
 
 const AccountPage = () => {
   const queryClient = useQueryClient();
@@ -39,9 +42,6 @@ const AccountPage = () => {
     useUpdateProfile();
 
   const { mutate: uploadImage, isPending: uploadingImage } = useUploadImage();
-
-  const { mutate: sendFriendRequest, isPending: sendingFriendRequest } =
-    useSendFriendRequest();
 
   const [showQRModal, setShowQRModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -126,47 +126,6 @@ const AccountPage = () => {
     await logout();
     await deleteItemAsync('token');
     router.push('/');
-  };
-
-  const handleSendFriendRequest = (email: string) => {
-    sendFriendRequest(email, {
-      onSuccess: (response: any) => {
-        console.log('SUCCESS::::', response);
-        ToastAndroid.showWithGravity(
-          'Friend request sent',
-          ToastAndroid.BOTTOM,
-          ToastAndroid.LONG
-        );
-      },
-      onError: (error: any) => {
-        console.log('ERROR::::', error?.response?.data);
-        ToastAndroid.showWithGravity(
-          error?.response?.data?.message || 'Failed to send',
-          ToastAndroid.BOTTOM,
-          ToastAndroid.LONG
-        );
-      },
-    });
-  };
-
-  const getActivityIcon = (type: string, iconName: string) => {
-    const iconColor = colors.primary.DEFAULT || '#10b981';
-    const size = 24;
-
-    switch (iconName) {
-      case 'dollar-sign':
-        return <Feather name='dollar-sign' size={size} color={iconColor} />;
-      case 'users':
-        return <Feather name='users' size={size} color={iconColor} />;
-      case 'user-plus':
-        return <Feather name='user-plus' size={size} color={iconColor} />;
-      case 'globe':
-        return (
-          <MaterialCommunityIcons name='earth' size={size} color={iconColor} />
-        );
-      default:
-        return <Feather name='activity' size={size} color={iconColor} />;
-    }
   };
 
   return (
@@ -308,7 +267,6 @@ const AccountPage = () => {
                 </View>
               </View>
 
-              {/* Profile Visibility Toggle */}
               <View style={editStyles.inputGroup}>
                 <Text style={editStyles.inputLabel}>Profile Visibility</Text>
                 <TouchableOpacity
@@ -333,7 +291,6 @@ const AccountPage = () => {
               </View>
             </ScrollView>
 
-            {/* Action Buttons */}
             <View style={editStyles.buttonRow}>
               <TouchableOpacity
                 style={editStyles.cancelButton}
@@ -356,130 +313,124 @@ const AccountPage = () => {
           </View>
         </View>
       </Modal>
+
       <ScrollView
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
       >
-        {myProfileLoading ? (
-          <View
+        <View style={{
+          display: "flex",
+          flexDirection: "column",
+          height: "100%",
+        }}>
+          {myProfileLoading ? (
+            <View
+              style={{
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <LoadingScreen />
+            </View>
+          ) : (
+            <>
+              <View style={styles.profileCard}>
+                {/* Avatar and Info */}
+                <View style={styles.profileHeader}>
+                  <View style={styles.avatar}>
+                    {userProfile?.data?.profile_picture ? (
+                      <Image
+                        source={{ uri: userProfile.data.profile_picture }}
+                        style={styles.avatarImage}
+                      />
+                    ) : (
+                      <Text style={styles.avatarText}>
+                        {(userProfile?.data?.fullname ||
+                          userProfile?.data?.username)?.[0]?.toUpperCase() ||
+                          'U'}
+                      </Text>
+                    )}
+                  </View>
+                  <View style={styles.profileInfo}>
+                    <Text style={styles.profileName}>
+                      {userProfile?.data?.fullname ||
+                        userProfile?.data?.username ||
+                        'User'}
+                    </Text>
+                    <Text style={styles.profileDetail}>
+                      {userProfile?.data?.email || ''}
+                    </Text>
+                    {userProfile?.data?.address && (
+                      <Text style={styles.profileDetail}>
+                        {userProfile?.data?.address || 'No address provided'}
+                      </Text>
+                    )}
+                  </View>
+                </View>
+
+                <View style={styles.qrButtonsRow}>
+                  <Button
+                    style={{ flex: 1 }}
+                    title='Share'
+                    onPress={() => setShowQRModal(true)}
+                    icon={
+                      <MaterialCommunityIcons
+                        name='qrcode'
+                        size={20}
+                        color={colors.black}
+                      />
+                    }
+                  />
+
+                  <Button
+                    onPress={() => setShowEditModal(true)}
+                    icon={<SquarePen size={16} color={colors.white} />}
+                    title='Edit Profile'
+                    style={{
+                      backgroundColor: colors.grayTextColor.DEFAULT,
+                      flex: 1,
+                    }}
+                    textColor={colors.white}
+                  />
+                </View>
+              </View>
+            </>
+          )}
+
+          <RecentActivitiesList pageSize={4} loadInfinite={false} />
+
+          <TouchableOpacity
             style={{
-              width: '100%',
-              height: '100%',
-              display: 'flex',
+              flexDirection: 'row',
               alignItems: 'center',
               justifyContent: 'center',
+              paddingVertical: 16,
+              paddingHorizontal: 16,
+              borderRadius: 50,
+              borderWidth: 1,
+              backgroundColor: '#410E0E',
+              gap: 8,
+              marginTop: 24,
             }}
+            onPress={handleLogout}
           >
-            <LoadingScreen />
-          </View>
-        ) : (
-          <>
-            <View style={styles.profileCard}>
-              {/* Avatar and Info */}
-              <View style={styles.profileHeader}>
-                <View style={styles.avatar}>
-                  {userProfile?.data?.profile_picture ? (
-                    <Image
-                      source={{ uri: userProfile.data.profile_picture }}
-                      style={styles.avatarImage}
-                    />
-                  ) : (
-                    <Text style={styles.avatarText}>
-                      {(userProfile?.data?.fullname ||
-                        userProfile?.data?.username)?.[0]?.toUpperCase() || 'U'}
-                    </Text>
-                  )}
-                </View>
-                <View style={styles.profileInfo}>
-                  <Text style={styles.profileName}>
-                    {userProfile?.data?.fullname ||
-                      userProfile?.data?.username ||
-                      'User'}
-                  </Text>
-                  <Text style={styles.profileDetail}>
-                    {userProfile?.data?.email || ''}
-                  </Text>
-                  {userProfile?.data?.address && (
-                    <Text style={styles.profileDetail}>
-                      {userProfile?.data?.address || 'No address provided'}
-                    </Text>
-                  )}
-                  <Text style={styles.profileDetail}>
-                    <View
-                      style={{
-                        paddingHorizontal: 8,
-                        paddingVertical: 4,
-                        backgroundColor: userProfile?.data?.profile_visible
-                          ? colors.green[800]
-                          : colors.red[900],
-                        borderRadius: 8,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                    >
-                      <Text style={{ fontSize: 12, fontWeight: 'semibold' }}>
-                        {userProfile?.data?.profile_visible
-                          ? 'Public'
-                          : 'Private'}
-                      </Text>
-                    </View>
-                  </Text>
-                </View>
-              </View>
-
-              {/* Edit Profile Button */}
-              <TouchableOpacity
-                onPress={() => setShowEditModal(true)}
-                style={styles.editButton}
-              >
-                <Feather name='edit-3' size={16} color={colors.white} />
-                <Text style={styles.editButtonText}>Edit Profile</Text>
-              </TouchableOpacity>
-
-              {/* QR Buttons */}
-              <View style={styles.qrButtonsRow}>
-                <TouchableOpacity
-                  style={styles.qrButton}
-                  onPress={() => setShowQRModal(true)}
-                >
-                  <MaterialCommunityIcons
-                    name='qrcode'
-                    size={20}
-                    color={colors.white}
-                  />
-                  <Text style={styles.qrButtonText}>Show QR</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.qrButton}
-                  onPress={() => setShowScanner(true)}
-                >
-                  <MaterialCommunityIcons
-                    name='qrcode-scan'
-                    size={20}
-                    color={colors.white}
-                  />
-                  <Text style={styles.qrButtonText}>Scan QR</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </>
-        )}
-
-        {/* Logout Button */}
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Feather
-            name='log-out'
-            size={18}
-            color={colors.red.DEFAULT || '#ef4444'}
-          />
-          <Text style={styles.logoutText}>Logout</Text>
-        </TouchableOpacity>
-
-        <View style={{ height: 40 }} />
+            <LogOut size={18} color={colors.white} />
+            <Text
+              style={{
+                color: colors.white,
+                fontSize: 16,
+                fontWeight: '600',
+              }}
+            >
+              Logout
+            </Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
 
-      {/* QR Code Modal */}
       <Modal
         visible={showQRModal}
         transparent={true}
@@ -488,7 +439,6 @@ const AccountPage = () => {
       >
         <View style={styles.qrModalOverlay}>
           <View style={styles.qrModalContent}>
-            {/* Header */}
             <View style={styles.qrModalHeader}>
               <Text style={styles.qrModalTitle}>Your QR Code</Text>
               <TouchableOpacity onPress={() => setShowQRModal(false)}>
@@ -500,7 +450,6 @@ const AccountPage = () => {
               </TouchableOpacity>
             </View>
 
-            {/* User Info */}
             <View style={styles.qrUserInfo}>
               <View style={styles.qrAvatar}>
                 {userProfile?.data?.profile_picture ? (
@@ -526,7 +475,6 @@ const AccountPage = () => {
               </Text>
             </View>
 
-            {/* QR Code */}
             <View style={styles.qrCodeContainer}>
               <QRCode
                 value={userProfile?.data?.email || 'no-id'}
@@ -536,12 +484,10 @@ const AccountPage = () => {
               />
             </View>
 
-            {/* Instructions */}
             <Text style={styles.qrInstructions}>
               Share this QR code with friends to connect quickly
             </Text>
 
-            {/* Close Button */}
             <TouchableOpacity
               style={styles.qrCloseButton}
               onPress={() => setShowQRModal(false)}
@@ -549,37 +495,6 @@ const AccountPage = () => {
               <Text style={styles.qrCloseButtonText}>Close</Text>
             </TouchableOpacity>
           </View>
-        </View>
-      </Modal>
-
-      {/* QR Scanner Modal */}
-      <Modal
-        visible={showScanner}
-        transparent
-        animationType='fade'
-        onRequestClose={() => setShowScanner(false)}
-      >
-        <View style={styles.qrModalOverlay}>
-          <QRScannerScreen
-            onScan={(data) => {
-              const emailRegex =
-                /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/;
-              const match = data.match(emailRegex);
-
-              if (match) {
-                const email = match[0].trim();
-                handleSendFriendRequest(email);
-                setShowScanner(false);
-              } else {
-                ToastAndroid.showWithGravity(
-                  'No valid email found in QR code',
-                  ToastAndroid.BOTTOM,
-                  ToastAndroid.LONG
-                );
-              }
-            }}
-            styles={undefined}
-          />
         </View>
       </Modal>
     </ScreenContainer>
@@ -683,23 +598,6 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 1,
   },
-  logoutButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'transparent',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.red.DEFAULT || '#ef4444',
-    gap: 8,
-  },
-  logoutText: {
-    color: colors.red.DEFAULT || '#ef4444',
-    fontSize: 16,
-    fontWeight: '600',
-  },
   qrModalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.8)',
@@ -791,14 +689,14 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   qrCloseButton: {
-    backgroundColor: colors.white,
+    backgroundColor: colors.cardBackground.light,
     paddingVertical: 12,
     paddingHorizontal: 32,
     borderRadius: 8,
     width: '100%',
   },
   qrCloseButtonText: {
-    color: colors.black,
+    color: colors.white,
     fontSize: 16,
     fontWeight: '600',
     textAlign: 'center',
@@ -911,7 +809,7 @@ const editStyles = StyleSheet.create({
     fontSize: 16,
   },
   buttonRow: {
-    flexDirection: 'row',
+    flexDirection: 'row-reverse',
     gap: 12,
     marginTop: 24,
   },
@@ -919,24 +817,24 @@ const editStyles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.cardBackground.light,
     paddingVertical: 14,
-    borderRadius: 8,
+    borderRadius: 36,
     alignItems: 'center',
   },
   cancelButtonText: {
     color: colors.white,
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 14,
+    fontWeight: '600'
   },
   saveButton: {
     flex: 1,
     backgroundColor: colors.white,
     paddingVertical: 14,
-    borderRadius: 8,
+    borderRadius: 36,
     alignItems: 'center',
   },
   saveButtonText: {
     color: colors.black,
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
   },
 });

@@ -3,6 +3,7 @@ import {
   ScrollView,
   RefreshControl,
   Alert,
+  Text,
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import ScreenContainer from '@/components/ScreenContainer';
@@ -71,7 +72,7 @@ const GroupDetailPage = () => {
           setAddExpenseModalVisible(false);
           resetForm();
           queryClient.invalidateQueries({
-            queryKey: ['group', groupId],
+            queryKey: [groupId, 'groupById'],
           });
         },
         onError: (error: any) => {
@@ -129,6 +130,9 @@ const GroupDetailPage = () => {
                 flex: 1,
               }}
             />
+            <Text style={{
+              
+            }}>{groupData?.data?.members?.length} members</Text>
             <GroupQrButton groupData={groupData} />
           </View>
           <GroupDetailsPageHeader groupData={groupData} />

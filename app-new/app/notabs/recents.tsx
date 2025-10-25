@@ -16,7 +16,7 @@ const RecentActivities = () => {
         }}
       />
       <ScrollView>
-        <RecentActivitiesList pageSize={15} loadInfinite={true} />
+        <RecentActivitiesList pageSize={5} loadInfinite={true} />
       </ScrollView>
     </ScreenContainer>
   );
