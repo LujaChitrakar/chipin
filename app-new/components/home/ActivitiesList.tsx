@@ -70,50 +70,50 @@ const RecentActivitiesList = ({
   const getActivityTitle = (activity: any) => {
     switch (activity.activityType) {
       case 'CREATE_GROUP':
-        return activity?.group.name;
+        return activity?.group?.name;
       case 'JOIN_GROUP':
-        return activity?.group.name;
+        return activity?.group?.name;
       case 'SEND_FRIEND_REQUEST':
         return (
-          activity?.otherUser.fullname ||
-          activity?.otherUser.username ||
-          activity?.otherUser.email
+          activity?.otherUser?.fullname ||
+          activity?.otherUser?.username ||
+          activity?.otherUser?.email
         );
       case 'ACCEPT_FRIEND_REQUEST':
         return (
-          activity?.otherUser.fullname ||
-          activity?.otherUser.username ||
-          activity?.otherUser.email
+          activity?.otherUser?.fullname ||
+          activity?.otherUser?.username ||
+          activity?.otherUser?.email
         );
       case 'REJECT_FRIEND_REQUEST':
         return (
-          activity?.otherUser.fullname ||
-          activity?.otherUser.username ||
-          activity?.otherUser.email
+          activity?.otherUser?.fullname ||
+          activity?.otherUser?.username ||
+          activity?.otherUser?.email
         );
       case 'REMOVED_FRIEND':
         return (
-          activity?.otherUser.fullname ||
-          activity?.otherUser.username ||
-          activity?.otherUser.email
+          activity?.otherUser?.fullname ||
+          activity?.otherUser?.username ||
+          activity?.otherUser?.email
         );
       case 'CREATE_SQUAD':
         return activity?.squad?.name;
       case 'JOIN_SQUAD':
         return activity?.squad?.name;
       case 'ADD_EXPENSE':
-        return activity?.group.name;
+        return activity?.group?.name;
       case 'UPDATE_EXPENSE':
-        return activity?.group.name;
+        return activity?.group?.name;
       case 'DELETE_EXPENSE':
-        return activity?.group.name;
+        return activity?.group?.name;
       case 'SETTLE_PAYMENT':
       case 'BORROWED_MONEY':
       case 'LENT_MONEY':
         return (
-          activity?.otherUser.fullname ||
-          activity?.otherUser.username ||
-          activity?.otherUser.email
+          activity?.otherUser?.fullname ||
+          activity?.otherUser?.username ||
+          activity?.otherUser?.email
         );
       case 'ADD_SAVING':
         return ``;

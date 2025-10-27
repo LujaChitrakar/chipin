@@ -4,7 +4,15 @@ import { CopyIcon, LucideCopyCheck } from 'lucide-react-native';
 import colors from '@/assets/colors';
 import * as Clipboard from 'expo-clipboard';
 
-const WalletAddressDisplay = ({ address }: { address: string }) => {
+const WalletAddressDisplay = ({
+  address,
+  displayCharacters = 25,
+  textStyle,
+}: {
+  address: string;
+  displayCharacters?: number;
+  textStyle?: any;
+}) => {
   const [copied, setCopied] = React.useState(false);
   return (
     <View
@@ -18,9 +26,11 @@ const WalletAddressDisplay = ({ address }: { address: string }) => {
         style={{
           color: colors.grayTextColor.DEFAULT,
           textAlign: 'center',
+          ...textStyle,
         }}
       >
-        {address.substring(0, 25)}...
+        {address.substring(0, displayCharacters)}
+        {address.length > displayCharacters ? '...' : ''}
       </Text>
       <TouchableOpacity
         onPress={async () => {

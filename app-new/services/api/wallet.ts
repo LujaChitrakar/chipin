@@ -1,4 +1,5 @@
 import { transferUSDC } from '@/utils/transfer';
+import { useEmbeddedSolanaWallet } from "@privy-io/expo";
 import { useMutation } from '@tanstack/react-query';
 
 export const useSendUSDC = () => {
@@ -14,7 +15,7 @@ export const useSendUSDC = () => {
     }) => {
       if (!wallet?.getProvider) throw new Error('Wallet not found');
       const provider = await wallet.getProvider();
-    
+
       const fromPubkey = wallet.publicKey;
       const sig = await transferUSDC(provider, fromPubkey, recipient, amount);
       return {
@@ -23,6 +24,22 @@ export const useSendUSDC = () => {
         paid_to_address: recipient,
         amount,
       };
+    },
+  });
+};
+
+export const useCreateWallet = () => {
+  const { create: createSolanaWallet } = useEmbeddedSolanaWallet();
+
+  const createWallets = () => {
+    return createSolanaWallet?.({
+      createAdditional: true,
+      recoveryMethod: 'privy',
+    });
+  };
+  return useMutation({
+    mutationFn: async () => {
+      const newWallet = await createWallets();
     },
   });
 };

@@ -15,7 +15,7 @@ const ScreenContainer = ({ children }: ScreenContainerProps) => {
                 gap: 4,
                 height: '100%',
                 backgroundColor: colors.background.dark,
-                paddingHorizontal: 12,
+                paddingHorizontal: 20,
             }}
         >
             {children}

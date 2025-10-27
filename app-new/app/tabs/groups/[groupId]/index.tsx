@@ -1,17 +1,8 @@
-import {
-  View,
-  ScrollView,
-  RefreshControl,
-  Alert,
-  Text,
-} from 'react-native';
+import { View, ScrollView, RefreshControl, Alert, Text } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import ScreenContainer from '@/components/ScreenContainer';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import {
-  useAddExpense,
-  useGetGroupById,
-} from '@/services/api/groupApi';
+import { useAddExpense, useGetGroupById } from '@/services/api/groupApi';
 import { useGetMyProfile } from '@/services/api/authApi';
 import { useQueryClient } from '@tanstack/react-query';
 import colors from '@/assets/colors';
@@ -38,7 +29,6 @@ const GroupDetailPage = () => {
     useGetGroupById(groupId);
   const { data: myProfile, isLoading: myProfileLoading } = useGetMyProfile();
   const { mutate: addExpense, isPending: addingExpense } = useAddExpense();
-
 
   const [addExpenseModalVisible, setAddExpenseModalVisible] = useState(false);
   const [expense_title, setExpenseTitle] = useState('');
@@ -83,15 +73,12 @@ const GroupDetailPage = () => {
     );
   };
 
-
   const resetForm = () => {
     setExpenseTitle('');
     setAmount('');
     setPaidBy(myProfile?.data?._id);
     setSplitBetween([myProfile?.data?._id]);
   };
-
-
 
   return (
     <ScreenContainer>
@@ -122,17 +109,21 @@ const GroupDetailPage = () => {
             style={{
               display: 'flex',
               flexDirection: 'row',
+              alignItems: 'center',
             }}
           >
-            <GroupMembersChain
-              members={groupData?.data?.members || []}
-              styles={{
-                flex: 1,
+            <GroupMembersChain members={groupData?.data?.members || []} />
+            <Text
+              style={{
+                color: colors.white,
+                fontSize: 16,
+                textDecorationLine: 'underline',
+                marginLeft: 8,
               }}
-            />
-            <Text style={{
-              
-            }}>{groupData?.data?.members?.length} members</Text>
+            >
+              {groupData?.data?.members?.length} members
+            </Text>
+            <View style={{ flex: 1 }}></View>
             <GroupQrButton groupData={groupData} />
           </View>
           <GroupDetailsPageHeader groupData={groupData} />

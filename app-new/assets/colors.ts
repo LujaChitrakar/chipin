@@ -58,6 +58,7 @@ const colors = {
   textInputBackground: {
     DEFAULT: '#1e1e1e',
   },
+  
 
   gray: {
     50: '#f9fafb',
