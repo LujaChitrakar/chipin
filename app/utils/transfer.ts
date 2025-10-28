@@ -8,7 +8,7 @@ import { RPC_URL, USDC_MINT } from "@/constants/WalletConfig";
 import { prepareSponsoredTransaction } from "@/components/walletActions/transaction";
 
 const FEE_PAYER_ADDRESS = "3SzstxZg8JafeitfvCqC9f1Ku9VRYk9SfKtPfp8kZghF"; // Your backend wallet address
-const BACKEND_URL = "https://your-backend.com/api";
+const BACKEND_URL = "https://your-backend.com";
 
 export async function transferUSDC(
   provider: any,
