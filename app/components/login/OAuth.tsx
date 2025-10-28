@@ -24,18 +24,7 @@ export default function OAuth() {
           margin: 10,
         }}
       >
-        {[
-          "github",
-          "google",
-          "discord",
-          "apple",
-          "twitter",
-          "tiktok",
-          "spotify",
-          "instagram",
-          "linkedin",
-          "line",
-        ].map((provider) => (
+        {["google"].map((provider) => (
           <View key={provider}>
             <Button
               title={`Login with ${provider}`}
