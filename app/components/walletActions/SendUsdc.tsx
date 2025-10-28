@@ -13,14 +13,20 @@ export default function SendUSDC() {
       if (!wallet?.getProvider) throw new Error("Wallet not found");
       const provider = await wallet.getProvider();
 
-      const fromPubkey = wallet.publicKey;
       const recipient = "BEL7ZKzg3rYrUL2hRaK2WocpxCc6QeBtArJwLiYWGyY6";
-      const amount = 100;
 
-      setStatus(" Sending 1 USDC...");
-      const sig = await transferUSDC(provider, fromPubkey, recipient, amount);
+      const fromPubkey = wallet.publicKey;
+      const amount = "100";
+      setStatus(" Sending USDC...");
 
-      setStatus(`Sent! Signature: ${sig}`);
+      const signature = await transferUSDC(
+        provider,
+        wallet.address,
+        recipient,
+        parseFloat(amount)
+      );
+
+      setStatus(`Sent! tx Signature: ${signature}`);
     } catch (err: any) {
       setStatus(` ${err?.message ?? String(err)}`);
     }

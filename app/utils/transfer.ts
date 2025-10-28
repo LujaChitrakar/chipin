@@ -5,6 +5,10 @@ import {
   createTransferInstruction,
 } from "@solana/spl-token";
 import { RPC_URL, USDC_MINT } from "@/constants/WalletConfig";
+import { prepareSponsoredTransaction } from "@/components/walletActions/transaction";
+
+const FEE_PAYER_ADDRESS = "3SzstxZg8JafeitfvCqC9f1Ku9VRYk9SfKtPfp8kZghF"; // Your backend wallet address
+const BACKEND_URL = "https://your-backend.com/api";
 
 export async function transferUSDC(
   provider: any,
@@ -34,17 +38,29 @@ export async function transferUSDC(
     createTransferInstruction(fromATA, toATA, fromKey, amountInUnits)
   );
 
-  // Build transaction
-  const tx = new Transaction().add(...instructions);
-  tx.feePayer = fromKey;
-  tx.recentBlockhash = (
-    await connection.getLatestBlockhash('finalized')
-  ).blockhash;
+  const signedTransaction = await prepareSponsoredTransaction(
+    provider,
+    fromPubkey,
+    instructions,
+    FEE_PAYER_ADDRESS
+  );
 
-  const { signature } = await provider.request({
-    method: 'signAndSendTransaction',
-    params: { transaction: tx, connection },
+  const response = await fetch(`${BACKEND_URL}/sponsor-transaction`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      transaction: signedTransaction,
+      userPublicKey: fromPubkey,
+    }),
   });
 
-  return signature;
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || "Failed to send transaction");
+  }
+
+  const { transactionHash } = await response.json();
+  return transactionHash;
 }

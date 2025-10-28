@@ -1,5 +1,4 @@
 import { RPC_URL } from "@/constants/WalletConfig";
-import { useEmbeddedSolanaWallet } from "@privy-io/expo";
 import {
   TransactionMessage,
   PublicKey,
@@ -9,17 +8,13 @@ import {
 } from "@solana/web3.js";
 
 // This function prepares and signs a sponsored transaction
-async function prepareSponsoredTransaction(
+export async function prepareSponsoredTransaction(
+  provider: any,
+  userPublickey: string | PublicKey,
   instructions: TransactionInstruction[],
   feePayerAddress: string | PublicKey
 ) {
   // Get the embedded wallet
-  const { wallets } = useEmbeddedSolanaWallet();
-  const embeddedWallet = wallets?.[0];
-
-  if (!embeddedWallet?.getProvider) {
-    throw new Error("No embedded wallet found");
-  }
   // Create a connection to Solana
   const connection = new Connection(RPC_URL);
   const { blockhash } = await connection.getLatestBlockhash();
@@ -35,40 +30,15 @@ async function prepareSponsoredTransaction(
   const transaction = new VersionedTransaction(message);
 
   // Serialize message for signing
-  const serializedMessage = Buffer.from(
-    transaction.message.serialize()
-  ).toString("base64");
+  const serializeTx = Buffer.from(transaction.serialize()).toString("base64");
 
   // Get provider and sign
-  const provider = await embeddedWallet.getProvider();
-  const { signature: serializedUserSignature } = await provider.request({
-    method: "signMessage",
+  const { signature: userSignatureBase64 } = await provider.request({
+    method: "signTransaction",
     params: {
-      message: serializedMessage,
+      transaction: serializeTx,
     },
   });
 
-  // Add user signature to transaction
-  const userSignature = Buffer.from(serializedUserSignature, "base64");
-  transaction.addSignature(
-    new PublicKey(embeddedWallet.address),
-    userSignature
-  );
-
-  // Serialize the transaction to send to backend
-  const serializedTransaction = Buffer.from(transaction.serialize()).toString(
-    "base64"
-  );
-
-  // Send to your backend
-  const response = await fetch("your-backend-endpoint", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ transaction: serializedTransaction }),
-  });
-
-  const { transactionHash } = await response.json();
-  return transactionHash;
+  return userSignatureBase64;
 }
