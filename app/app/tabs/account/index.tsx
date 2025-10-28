@@ -8,23 +8,23 @@ import {
   TextInput,
   Image,
   ToastAndroid,
-} from 'react-native';
-import React, { useEffect, useState } from 'react';
-import { usePrivy } from '@privy-io/expo';
-import { router } from 'expo-router';
-import colors from '@/assets/colors';
-import ScreenHeader from '@/components/navigation/ScreenHeader';
-import ScreenContainer from '@/components/ScreenContainer';
-import { deleteItemAsync } from 'expo-secure-store';
-import { AntDesign, Feather, MaterialCommunityIcons } from '@expo/vector-icons';
-import { useGetMyProfile, useUpdateProfile } from '@/services/api/authApi';
-import LoadingScreen from '@/components/splash/LoadingScreen';
-import QRCode from 'react-native-qrcode-svg';
-import { useUploadImage } from '@/services/api/uploadApi';
-import { launchImageLibrary, launchCamera } from 'react-native-image-picker';
-import { useQueryClient } from '@tanstack/react-query';
-import { useSendFriendRequest } from '@/services/api/friendsApi';
-import QRScannerScreen from '@/components/QrScannerScreen';
+} from "react-native";
+import React, { useEffect, useState } from "react";
+import { usePrivy } from "@privy-io/expo";
+import { router } from "expo-router";
+import colors from "@/assets/colors";
+import ScreenHeader from "@/components/navigation/ScreenHeader";
+import ScreenContainer from "@/components/ScreenContainer";
+import { deleteItemAsync } from "expo-secure-store";
+import { AntDesign, Feather, MaterialCommunityIcons } from "@expo/vector-icons";
+import { useGetMyProfile, useUpdateProfile } from "@/services/api/authApi";
+import LoadingScreen from "@/components/splash/LoadingScreen";
+import QRCode from "react-native-qrcode-svg";
+import { useUploadImage } from "@/services/api/uploadApi";
+import { launchImageLibrary, launchCamera } from "react-native-image-picker";
+import { useQueryClient } from "@tanstack/react-query";
+import { useSendFriendRequest } from "@/services/api/friendsApi";
+import QRScannerScreen from "@/components/QrScannerScreen";
 
 const AccountPage = () => {
   const queryClient = useQueryClient();
@@ -45,32 +45,32 @@ const AccountPage = () => {
 
   const [showQRModal, setShowQRModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [editedFullName, setEditedFullName] = useState('');
-  const [editedPhone, setEditedPhone] = useState('');
-  const [editedAddress, setEditedAddress] = useState('');
+  const [editedFullName, setEditedFullName] = useState("");
+  const [editedPhone, setEditedPhone] = useState("");
+  const [editedAddress, setEditedAddress] = useState("");
   const [profileVisible, setProfileVisible] = useState(true);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [uploadedImageUrl, setUploadedImageUrl] = useState('');
+  const [uploadedImageUrl, setUploadedImageUrl] = useState("");
   const [showScanner, setShowScanner] = useState(false);
 
   useEffect(() => {
     if (showEditModal && userProfile?.data) {
-      setEditedFullName(userProfile.data.fullname || '');
-      setEditedPhone(userProfile.data.phone_number || '');
-      setEditedAddress(userProfile.data.address || '');
+      setEditedFullName(userProfile.data.fullname || "");
+      setEditedPhone(userProfile.data.phone_number || "");
+      setEditedAddress(userProfile.data.address || "");
       setProfileVisible(userProfile.data.profile_visible);
-      setUploadedImageUrl(userProfile.data.profile_picture || '');
+      setUploadedImageUrl(userProfile.data.profile_picture || "");
     }
   }, [showEditModal, userProfile]);
 
   const pickImage = async () => {
     const result = await launchImageLibrary({
-      mediaType: 'photo',
+      mediaType: "photo",
       quality: 1,
     });
 
     if (!result.didCancel) {
-      setSelectedImage(result.assets?.[0]?.uri || '');
+      setSelectedImage(result.assets?.[0]?.uri || "");
     }
   };
 
@@ -87,7 +87,7 @@ const AccountPage = () => {
       uploadImage(selectedImage, {
         onSuccess: (response) => {
           const imageUrl = response?.data?.uri;
-          console.log('IMAGE UPLOAD RESPONSE:::', response);
+          console.log("IMAGE UPLOAD RESPONSE:::", response);
           setUploadedImageUrl(imageUrl);
           updateMyProfile(
             { ...updatedData, profile_picture: imageUrl },
@@ -96,7 +96,7 @@ const AccountPage = () => {
                 setShowEditModal(false);
                 setSelectedImage(null);
                 queryClient.invalidateQueries({
-                  queryKey: ['myprofile'],
+                  queryKey: ["myprofile"],
                 });
               },
             }
@@ -110,7 +110,7 @@ const AccountPage = () => {
           setShowEditModal(false);
           setSelectedImage(null);
           queryClient.invalidateQueries({
-            queryKey: ['myprofile'],
+            queryKey: ["myprofile"],
           });
         },
       });
@@ -124,24 +124,30 @@ const AccountPage = () => {
 
   const handleLogout = async () => {
     await logout();
-    await deleteItemAsync('token');
-    router.push('/');
+    await deleteItemAsync("token");
+    router.push("/");
   };
 
   const handleSendFriendRequest = (email: string) => {
+    console.log("Sending friend request to:", email);
     sendFriendRequest(email, {
       onSuccess: (response: any) => {
-        console.log('SUCCESS::::', response);
+        console.log("SUCCESS::::", response);
         ToastAndroid.showWithGravity(
-          'Friend request sent',
+          "Friend request sent successfully",
           ToastAndroid.BOTTOM,
           ToastAndroid.LONG
         );
+        queryClient.invalidateQueries({ queryKey: ["my-friend-requests"] });
       },
       onError: (error: any) => {
-        console.log('ERROR::::', error?.response?.data);
+        console.error("ERROR::::", error?.response?.data || error);
+        const errorMessage =
+          error?.response?.data?.message ||
+          error?.message ||
+          "Failed to send friend request. Please try again.";
         ToastAndroid.showWithGravity(
-          error?.response?.data?.message || 'Failed to send',
+          errorMessage,
           ToastAndroid.BOTTOM,
           ToastAndroid.LONG
         );
@@ -150,22 +156,22 @@ const AccountPage = () => {
   };
 
   const getActivityIcon = (type: string, iconName: string) => {
-    const iconColor = colors.primary.DEFAULT || '#10b981';
+    const iconColor = colors.primary.DEFAULT || "#10b981";
     const size = 24;
 
     switch (iconName) {
-      case 'dollar-sign':
-        return <Feather name='dollar-sign' size={size} color={iconColor} />;
-      case 'users':
-        return <Feather name='users' size={size} color={iconColor} />;
-      case 'user-plus':
-        return <Feather name='user-plus' size={size} color={iconColor} />;
-      case 'globe':
+      case "dollar-sign":
+        return <Feather name="dollar-sign" size={size} color={iconColor} />;
+      case "users":
+        return <Feather name="users" size={size} color={iconColor} />;
+      case "user-plus":
+        return <Feather name="user-plus" size={size} color={iconColor} />;
+      case "globe":
         return (
-          <MaterialCommunityIcons name='earth' size={size} color={iconColor} />
+          <MaterialCommunityIcons name="earth" size={size} color={iconColor} />
         );
       default:
-        return <Feather name='activity' size={size} color={iconColor} />;
+        return <Feather name="activity" size={size} color={iconColor} />;
     }
   };
 
@@ -173,11 +179,11 @@ const AccountPage = () => {
 
   return (
     <ScreenContainer>
-      <ScreenHeader title='Account' backButton={false} />
+      <ScreenHeader title="Account" backButton={false} />
       <Modal
         visible={showEditModal}
         transparent={true}
-        animationType='fade'
+        animationType="fade"
         onRequestClose={handleCancelEdit}
       >
         <View style={editStyles.modalOverlay}>
@@ -186,7 +192,7 @@ const AccountPage = () => {
             <View style={editStyles.modalHeader}>
               <Text style={editStyles.modalTitle}>Edit Profile</Text>
               <TouchableOpacity onPress={handleCancelEdit}>
-                <Feather name='x' size={24} color={colors.gray[400]} />
+                <Feather name="x" size={24} color={colors.gray[400]} />
               </TouchableOpacity>
             </View>
 
@@ -207,11 +213,11 @@ const AccountPage = () => {
                       />
                     ) : (
                       <Text style={editStyles.editAvatarText}>
-                        {editedFullName?.[0]?.toUpperCase() || 'J'}
+                        {editedFullName?.[0]?.toUpperCase() || "J"}
                       </Text>
                     )}
                     <View style={editStyles.cameraButton}>
-                      <Feather name='camera' size={16} color={colors.white} />
+                      <Feather name="camera" size={16} color={colors.white} />
                     </View>
                   </View>
                 </TouchableOpacity>
@@ -225,7 +231,7 @@ const AccountPage = () => {
                 <Text style={editStyles.inputLabel}>Full Name</Text>
                 <View style={editStyles.inputContainer}>
                   <Feather
-                    name='user'
+                    name="user"
                     size={18}
                     color={colors.gray[400]}
                     style={editStyles.inputIcon}
@@ -233,7 +239,7 @@ const AccountPage = () => {
                   <TextInput
                     value={editedFullName}
                     onChangeText={setEditedFullName}
-                    placeholder='John Doe'
+                    placeholder="John Doe"
                     placeholderTextColor={colors.gray[500]}
                     style={editStyles.textInput}
                   />
@@ -245,13 +251,13 @@ const AccountPage = () => {
                 <Text style={editStyles.inputLabel}>Email</Text>
                 <View style={[editStyles.inputContainer, { opacity: 0.6 }]}>
                   <Feather
-                    name='mail'
+                    name="mail"
                     size={18}
                     color={colors.gray[400]}
                     style={editStyles.inputIcon}
                   />
                   <TextInput
-                    value={userProfile?.data?.email || ''}
+                    value={userProfile?.data?.email || ""}
                     editable={false}
                     style={editStyles.textInput}
                   />
@@ -265,7 +271,7 @@ const AccountPage = () => {
                 </Text>
                 <View style={editStyles.inputContainer}>
                   <Feather
-                    name='phone'
+                    name="phone"
                     size={18}
                     color={colors.gray[400]}
                     style={editStyles.inputIcon}
@@ -273,9 +279,9 @@ const AccountPage = () => {
                   <TextInput
                     value={editedPhone}
                     onChangeText={setEditedPhone}
-                    placeholder='+1234567890'
+                    placeholder="+1234567890"
                     placeholderTextColor={colors.gray[500]}
-                    keyboardType='phone-pad'
+                    keyboardType="phone-pad"
                     style={editStyles.textInput}
                   />
                 </View>
@@ -286,7 +292,7 @@ const AccountPage = () => {
                 <Text style={editStyles.inputLabel}>Address (optional)</Text>
                 <View style={editStyles.inputContainer}>
                   <Feather
-                    name='map-pin'
+                    name="map-pin"
                     size={18}
                     color={colors.gray[400]}
                     style={editStyles.inputIcon}
@@ -294,7 +300,7 @@ const AccountPage = () => {
                   <TextInput
                     value={editedAddress}
                     onChangeText={setEditedAddress}
-                    placeholder='123 Main St'
+                    placeholder="123 Main St"
                     placeholderTextColor={colors.gray[500]}
                     style={editStyles.textInput}
                   />
@@ -313,7 +319,7 @@ const AccountPage = () => {
                   </Text>
                   <MaterialCommunityIcons
                     name={
-                      profileVisible ? 'toggle-switch' : 'toggle-switch-off'
+                      profileVisible ? "toggle-switch" : "toggle-switch-off"
                     }
                     size={48}
                     color={
@@ -341,8 +347,8 @@ const AccountPage = () => {
               >
                 <Text style={editStyles.saveButtonText}>
                   {uploadingImage || updatingProfile
-                    ? 'Saving...'
-                    : 'Save Changes'}
+                    ? "Saving..."
+                    : "Save Changes"}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -356,11 +362,11 @@ const AccountPage = () => {
         {myProfileLoading ? (
           <View
             style={{
-              width: '100%',
-              height: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
+              width: "100%",
+              height: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
             }}
           >
             <LoadingScreen />
@@ -379,7 +385,7 @@ const AccountPage = () => {
                   ) : (
                     <Text style={styles.avatarText}>
                       {(userProfile?.data?.fullname ||
-                        userProfile?.data?.username)?.[0]?.toUpperCase() || 'U'}
+                        userProfile?.data?.username)?.[0]?.toUpperCase() || "U"}
                     </Text>
                   )}
                 </View>
@@ -387,14 +393,14 @@ const AccountPage = () => {
                   <Text style={styles.profileName}>
                     {userProfile?.data?.fullname ||
                       userProfile?.data?.username ||
-                      'User'}
+                      "User"}
                   </Text>
                   <Text style={styles.profileDetail}>
-                    {userProfile?.data?.email || ''}
+                    {userProfile?.data?.email || ""}
                   </Text>
                   {userProfile?.data?.address && (
                     <Text style={styles.profileDetail}>
-                      {userProfile?.data?.address || 'No address provided'}
+                      {userProfile?.data?.address || "No address provided"}
                     </Text>
                   )}
                   <Text style={styles.profileDetail}>
@@ -406,15 +412,15 @@ const AccountPage = () => {
                           ? colors.green[800]
                           : colors.red[900],
                         borderRadius: 8,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
                       }}
                     >
-                      <Text style={{ fontSize: 12, fontWeight: 'semibold' }}>
+                      <Text style={{ fontSize: 12, fontWeight: "semibold" }}>
                         {userProfile?.data?.profile_visible
-                          ? 'Public'
-                          : 'Private'}
+                          ? "Public"
+                          : "Private"}
                       </Text>
                     </View>
                   </Text>
@@ -426,7 +432,7 @@ const AccountPage = () => {
                 onPress={() => setShowEditModal(true)}
                 style={styles.editButton}
               >
-                <Feather name='edit-3' size={16} color={colors.white} />
+                <Feather name="edit-3" size={16} color={colors.white} />
                 <Text style={styles.editButtonText}>Edit Profile</Text>
               </TouchableOpacity>
 
@@ -437,7 +443,7 @@ const AccountPage = () => {
                   onPress={() => setShowQRModal(true)}
                 >
                   <MaterialCommunityIcons
-                    name='qrcode'
+                    name="qrcode"
                     size={20}
                     color={colors.white}
                   />
@@ -448,7 +454,7 @@ const AccountPage = () => {
                   onPress={() => setShowScanner(true)}
                 >
                   <MaterialCommunityIcons
-                    name='qrcode-scan'
+                    name="qrcode-scan"
                     size={20}
                     color={colors.white}
                   />
@@ -463,16 +469,16 @@ const AccountPage = () => {
               {recentActivities?.length === 0 ? (
                 <View
                   style={{
-                    width: '100%',
+                    width: "100%",
                     height: 50,
-                    display: 'flex',
-                    flexDirection: 'row',
+                    display: "flex",
+                    flexDirection: "row",
                     gap: 5,
-                    alignItems: 'center',
-                    justifyContent: 'center',
+                    alignItems: "center",
+                    justifyContent: "center",
                   }}
                 >
-                  <AntDesign name='history' color={colors.gray.DEFAULT} />
+                  <AntDesign name="history" color={colors.gray.DEFAULT} />
                   <Text
                     style={{
                       color: colors.gray.DEFAULT,
@@ -501,7 +507,7 @@ const AccountPage = () => {
                           {activity.title}
                           {activity.subtitle && (
                             <Text style={styles.activitySubtitle}>
-                              {'\n'}
+                              {"\n"}
                               {activity.subtitle}
                             </Text>
                           )}
@@ -524,9 +530,9 @@ const AccountPage = () => {
         {/* Logout Button */}
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Feather
-            name='log-out'
+            name="log-out"
             size={18}
-            color={colors.red.DEFAULT || '#ef4444'}
+            color={colors.red.DEFAULT || "#ef4444"}
           />
           <Text style={styles.logoutText}>Logout</Text>
         </TouchableOpacity>
@@ -538,7 +544,7 @@ const AccountPage = () => {
       <Modal
         visible={showQRModal}
         transparent={true}
-        animationType='fade'
+        animationType="fade"
         onRequestClose={() => setShowQRModal(false)}
       >
         <View style={styles.qrModalOverlay}>
@@ -547,7 +553,7 @@ const AccountPage = () => {
             <View style={styles.qrModalHeader}>
               <Text style={styles.qrModalTitle}>Your QR Code</Text>
               <TouchableOpacity onPress={() => setShowQRModal(false)}>
-                <Feather name='x' size={24} color={colors.gray[400]} />
+                <Feather name="x" size={24} color={colors.gray[400]} />
               </TouchableOpacity>
             </View>
 
@@ -561,25 +567,25 @@ const AccountPage = () => {
                   />
                 ) : (
                   <Text style={styles.qrAvatarText}>
-                    {userProfile?.data?.fullname?.[0]?.toUpperCase() || 'U'}
+                    {userProfile?.data?.fullname?.[0]?.toUpperCase() || "U"}
                   </Text>
                 )}
               </View>
               <Text style={styles.qrUsername}>
-                {userProfile?.data?.fullname || 'User'}
+                {userProfile?.data?.fullname || "User"}
               </Text>
               <Text style={styles.qrEmail}>
-                {userProfile?.data?.email || ''}
+                {userProfile?.data?.email || ""}
               </Text>
             </View>
 
             {/* QR Code */}
             <View style={styles.qrCodeContainer}>
               <QRCode
-                value={userProfile?.data?.email || 'no-id'}
+                value={userProfile?.data?.email || "no-id"}
                 size={200}
-                backgroundColor='white'
-                color='black'
+                backgroundColor="white"
+                color="black"
               />
             </View>
 
@@ -603,23 +609,35 @@ const AccountPage = () => {
       <Modal
         visible={showScanner}
         transparent
-        animationType='fade'
+        animationType="fade"
         onRequestClose={() => setShowScanner(false)}
       >
         <View style={styles.qrModalOverlay}>
           <QRScannerScreen
             onScan={(data) => {
-              const emailRegex =
-                /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/;
-              const match = data.match(emailRegex);
+              try {
+                console.log("QR Data received:", data);
+                const emailRegex =
+                  /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/;
+                const match = data.match(emailRegex);
 
-              if (match) {
-                const email = match[0].trim();
-                handleSendFriendRequest(email);
-                setShowScanner(false);
-              } else {
+                if (match) {
+                  const email = match[0].trim();
+                  console.log("Email extracted:", email);
+                  handleSendFriendRequest(email);
+                  setShowScanner(false);
+                } else {
+                  console.log("No valid email found in QR data:", data);
+                  ToastAndroid.showWithGravity(
+                    "No valid email found in QR code",
+                    ToastAndroid.BOTTOM,
+                    ToastAndroid.LONG
+                  );
+                }
+              } catch (error) {
+                console.error("Error processing QR code:", error);
                 ToastAndroid.showWithGravity(
-                  'No valid email found in QR code',
+                  "Error processing QR code",
                   ToastAndroid.BOTTOM,
                   ToastAndroid.LONG
                 );
@@ -639,35 +657,35 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   profileCard: {
-    backgroundColor: colors.gray[800] || '#1e293b',
+    backgroundColor: colors.gray[800] || "#1e293b",
     borderRadius: 12,
     padding: 20,
     marginTop: 16,
     marginBottom: 24,
   },
   profileHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 20,
   },
   avatar: {
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: colors.primary.DEFAULT || '#10b981',
-    justifyContent: 'center',
-    alignItems: 'center',
-    overflow: 'hidden',
+    backgroundColor: colors.primary.DEFAULT || "#10b981",
+    justifyContent: "center",
+    alignItems: "center",
+    overflow: "hidden",
   },
   avatarImage: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
     borderRadius: 32,
   },
   avatarText: {
     color: colors.white,
     fontSize: 28,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   profileInfo: {
     marginLeft: 16,
@@ -676,19 +694,19 @@ const styles = StyleSheet.create({
   profileName: {
     color: colors.white,
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 2,
   },
   profileDetail: {
-    color: colors.gray[400] || '#9ca3af',
+    color: colors.gray[400] || "#9ca3af",
     fontSize: 14,
     marginTop: 2,
   },
   editButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.gray[700] || '#334155',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.gray[700] || "#334155",
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 8,
@@ -698,18 +716,18 @@ const styles = StyleSheet.create({
   editButtonText: {
     color: colors.white,
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   qrButtonsRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 12,
   },
   qrButton: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.gray[700] || '#334155',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.gray[700] || "#334155",
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 8,
@@ -718,25 +736,25 @@ const styles = StyleSheet.create({
   qrButtonText: {
     color: colors.white,
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   activitySection: {
     marginBottom: 24,
   },
   sectionTitle: {
-    color: colors.gray[400] || '#9ca3af',
+    color: colors.gray[400] || "#9ca3af",
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: 12,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
     letterSpacing: 1,
   },
   activityItem: {
-    backgroundColor: colors.gray[800] || '#1e293b',
+    backgroundColor: colors.gray[800] || "#1e293b",
     borderRadius: 12,
     padding: 16,
-    flexDirection: 'row',
-    alignItems: 'flex-start',
+    flexDirection: "row",
+    alignItems: "flex-start",
     marginBottom: 12,
   },
   activityItemLast: {
@@ -746,242 +764,242 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: colors.gray[700] || '#334155',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: colors.gray[700] || "#334155",
+    justifyContent: "center",
+    alignItems: "center",
     marginRight: 12,
   },
   activityContent: {
     flex: 1,
   },
   activityTextContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
     marginBottom: 6,
   },
   activityTitle: {
     color: colors.white,
     fontSize: 15,
-    fontWeight: '500',
+    fontWeight: "500",
     flex: 1,
   },
   activitySubtitle: {
-    color: colors.gray[400] || '#9ca3af',
+    color: colors.gray[400] || "#9ca3af",
     fontSize: 14,
-    fontWeight: '400',
+    fontWeight: "400",
   },
   activityAmount: {
-    color: colors.primary.DEFAULT || '#10b981',
+    color: colors.primary.DEFAULT || "#10b981",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     marginLeft: 12,
   },
   activityDate: {
-    color: colors.gray[500] || '#6b7280',
+    color: colors.gray[500] || "#6b7280",
     fontSize: 12,
   },
   logoutButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'transparent',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "transparent",
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: colors.red.DEFAULT || '#ef4444',
+    borderColor: colors.red.DEFAULT || "#ef4444",
     gap: 8,
   },
   logoutText: {
-    color: colors.red.DEFAULT || '#ef4444',
+    color: colors.red.DEFAULT || "#ef4444",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   qrModalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(0, 0, 0, 0.8)",
+    justifyContent: "center",
+    alignItems: "center",
     padding: 20,
   },
   qrModalContent: {
-    backgroundColor: colors.gray[800] || '#1e293b',
+    backgroundColor: colors.gray[800] || "#1e293b",
     borderRadius: 16,
     padding: 24,
-    width: '100%',
+    width: "100%",
     maxWidth: 400,
-    alignItems: 'center',
+    alignItems: "center",
   },
   qrModalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    width: '100%',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    width: "100%",
     marginBottom: 24,
   },
   qrModalTitle: {
     color: colors.white,
     fontSize: 22,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   qrUserInfo: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 24,
   },
   qrAvatar: {
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: colors.primary.DEFAULT || '#10b981',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: colors.primary.DEFAULT || "#10b981",
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: 12,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   qrAvatarImage: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
     borderRadius: 30,
   },
   qrAvatarText: {
     color: colors.white,
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   qrUsername: {
     color: colors.white,
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: 4,
   },
   qrEmail: {
-    color: colors.gray[400] || '#9ca3af',
+    color: colors.gray[400] || "#9ca3af",
     fontSize: 14,
   },
   qrCodeContainer: {
-    backgroundColor: 'white',
+    backgroundColor: "white",
     padding: 20,
     borderRadius: 12,
     marginBottom: 20,
   },
   qrIdContainer: {
-    width: '100%',
-    backgroundColor: colors.gray[700] || '#334155',
+    width: "100%",
+    backgroundColor: colors.gray[700] || "#334155",
     padding: 12,
     borderRadius: 8,
     marginBottom: 16,
   },
   qrIdLabel: {
-    color: colors.gray[400] || '#9ca3af',
+    color: colors.gray[400] || "#9ca3af",
     fontSize: 12,
     marginBottom: 4,
   },
   qrIdText: {
     color: colors.white,
     fontSize: 14,
-    fontFamily: 'monospace',
+    fontFamily: "monospace",
   },
   qrInstructions: {
-    color: colors.gray[400] || '#9ca3af',
+    color: colors.gray[400] || "#9ca3af",
     fontSize: 14,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: 20,
   },
   qrCloseButton: {
-    backgroundColor: colors.primary.DEFAULT || '#10b981',
+    backgroundColor: colors.primary.DEFAULT || "#10b981",
     paddingVertical: 12,
     paddingHorizontal: 32,
     borderRadius: 8,
-    width: '100%',
+    width: "100%",
   },
   qrCloseButtonText: {
     color: colors.white,
     fontSize: 16,
-    fontWeight: '600',
-    textAlign: 'center',
+    fontWeight: "600",
+    textAlign: "center",
   },
 });
 
 const editStyles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(0, 0, 0, 0.8)",
+    justifyContent: "center",
+    alignItems: "center",
     padding: 20,
   },
   modalContent: {
-    backgroundColor: colors.gray[800] || '#1e293b',
+    backgroundColor: colors.gray[800] || "#1e293b",
     borderRadius: 16,
     padding: 24,
-    width: '100%',
+    width: "100%",
     maxWidth: 400,
-    maxHeight: '85%',
+    maxHeight: "85%",
   },
   modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 24,
   },
   modalTitle: {
     color: colors.white,
     fontSize: 22,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   avatarSection: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 32,
   },
   editAvatar: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: colors.primary.DEFAULT || '#10b981',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: colors.primary.DEFAULT || "#10b981",
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: 12,
-    position: 'relative',
-    overflow: 'hidden',
+    position: "relative",
+    overflow: "hidden",
   },
   avatarImage: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
     borderRadius: 40,
   },
   editAvatarText: {
     color: colors.white,
     fontSize: 32,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   cameraButton: {
-    position: 'absolute',
+    position: "absolute",
     right: 0,
     bottom: 0,
-    backgroundColor: colors.gray[700] + '77',
-    width: '100%',
+    backgroundColor: colors.gray[700] + "77",
+    width: "100%",
     height: 32,
     borderRadius: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   changePhotoText: {
-    color: colors.gray[400] || '#9ca3af',
+    color: colors.gray[400] || "#9ca3af",
     fontSize: 14,
   },
   inputGroup: {
     marginBottom: 20,
   },
   inputLabel: {
-    color: colors.gray[400] || '#9ca3af',
+    color: colors.gray[400] || "#9ca3af",
     fontSize: 14,
     marginBottom: 8,
   },
   inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.gray[700] || '#334155',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.gray[700] || "#334155",
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 4,
@@ -996,10 +1014,10 @@ const editStyles = StyleSheet.create({
     paddingVertical: 12,
   },
   toggleContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: colors.gray[700] || '#334155',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: colors.gray[700] || "#334155",
     borderRadius: 8,
     padding: 4,
     paddingHorizontal: 16,
@@ -1009,33 +1027,33 @@ const editStyles = StyleSheet.create({
     fontSize: 16,
   },
   buttonRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 12,
     marginTop: 24,
   },
   cancelButton: {
     flex: 1,
-    backgroundColor: colors.gray[700] || '#334155',
+    backgroundColor: colors.gray[700] || "#334155",
     paddingVertical: 14,
     borderRadius: 8,
-    alignItems: 'center',
+    alignItems: "center",
   },
   cancelButtonText: {
     color: colors.white,
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   saveButton: {
     flex: 1,
-    backgroundColor: colors.primary.DEFAULT || '#10b981',
+    backgroundColor: colors.primary.DEFAULT || "#10b981",
     paddingVertical: 14,
     borderRadius: 8,
-    alignItems: 'center',
+    alignItems: "center",
   },
   saveButtonText: {
     color: colors.white,
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });
 

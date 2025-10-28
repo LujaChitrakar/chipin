@@ -34,6 +34,7 @@ export default function TransactionTable({
   programId?: string;
 }) {
   const { rpcUrl } = useRpcUrl();
+  const { explorerUrl } = useExplorerUrl();
   const { data: multisigConfig } = useMultisig();
 
   if (transactions.length === 0) {
@@ -71,9 +72,10 @@ export default function TransactionTable({
                 Number(transaction.index)) ||
             false;
 
-          const explorerUrl = createSolanaExplorerUrl(
+          const explorerUrlString = createSolanaExplorerUrl(
             transaction.transactionPda,
-            rpcUrl!
+            rpcUrl!,
+            explorerUrl
           );
 
           return (
@@ -82,7 +84,9 @@ export default function TransactionTable({
                 <Text>{Number(transaction.index)}</Text>
               </View>
               <View>
-                <TouchableOpacity onPress={() => Linking.openURL(explorerUrl)}>
+                <TouchableOpacity
+                  onPress={() => Linking.openURL(explorerUrlString)}
+                >
                   <Text numberOfLines={1}>{transaction.transactionPda}</Text>
                 </TouchableOpacity>
               </View>
@@ -147,8 +151,11 @@ function ActionButtons({
   );
 }
 
-function createSolanaExplorerUrl(publicKey: string, rpcUrl: string): string {
-  const { explorerUrl } = useExplorerUrl();
+function createSolanaExplorerUrl(
+  publicKey: string,
+  rpcUrl: string,
+  explorerUrl: string
+): string {
   const baseUrl = `${explorerUrl}/address/`;
   const clusterQuery = "?cluster=custom&customUrl=";
   const encodedRpcUrl = encodeURIComponent(rpcUrl);

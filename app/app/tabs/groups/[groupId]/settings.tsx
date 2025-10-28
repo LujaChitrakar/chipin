@@ -8,16 +8,16 @@ import {
   Alert,
   Modal,
   Image,
-} from 'react-native';
-import React, { useState, useEffect } from 'react';
-import { useGetMyFriends } from '@/services/api/friendsApi';
-import { useGetGroupById, useUpdateGroup } from '@/services/api/groupApi';
-import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
-import colors from '@/assets/colors';
-import { useQueryClient } from '@tanstack/react-query';
-import { AntDesign, Ionicons } from '@expo/vector-icons';
-import ScreenContainer from '@/components/ScreenContainer';
-import { LinearGradient } from 'expo-linear-gradient';
+} from "react-native";
+import React, { useState, useEffect } from "react";
+import { useGetMyFriends } from "@/services/api/friendsApi";
+import { useGetGroupById, useUpdateGroup } from "@/services/api/groupApi";
+import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
+import colors from "@/assets/colors";
+import { useQueryClient } from "@tanstack/react-query";
+import { AntDesign, Ionicons } from "@expo/vector-icons";
+import ScreenContainer from "@/components/ScreenContainer";
+import { LinearGradient } from "expo-linear-gradient";
 
 const GroupSettings = () => {
   const router = useRouter();
@@ -27,18 +27,18 @@ const GroupSettings = () => {
   const { data: groupData, isLoading: groupDataLoading } =
     useGetGroupById(groupId);
   const { mutate: updateGroup, isPending: updatingGroup } = useUpdateGroup();
-  const [friendSearchQuery, setFriendSearchQuery] = useState('');
+  const [friendSearchQuery, setFriendSearchQuery] = useState("");
   const { data: friendsData, isLoading: friendsLoading } = useGetMyFriends({
     page: 1,
     limit: 50,
     q: friendSearchQuery,
   });
 
-  const [groupName, setGroupName] = useState('');
+  const [groupName, setGroupName] = useState("");
   const [selectedMembers, setSelectedMembers] = useState<any[]>([]);
   const [adminIds, setAdminIds] = useState<string[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [newAddingCustomEmail, setNewAddingCustomEmail] = useState('');
+  const [newAddingCustomEmail, setNewAddingCustomEmail] = useState("");
 
   useEffect(() => {
     navigation.setOptions({ headerShown: false });
@@ -58,7 +58,7 @@ const GroupSettings = () => {
       groupData?.data?.member_emails?.includes(emailExtracted) ||
       friendsData?.data?.find((fr: any) => fr.email === emailExtracted)
     ) {
-      setNewAddingCustomEmail('');
+      setNewAddingCustomEmail("");
       return;
     }
     setNewAddingCustomEmail(emailExtracted);
@@ -79,7 +79,7 @@ const GroupSettings = () => {
       email
     ) {
       setSelectedMembers([...selectedMembers, member]);
-      setFriendSearchQuery('');
+      setFriendSearchQuery("");
       setShowAddModal(false);
     }
   };
@@ -116,17 +116,17 @@ const GroupSettings = () => {
       },
       {
         onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: ['group', groupId] });
-          Alert.alert('Success', 'Group settings updated successfully');
+          queryClient.invalidateQueries({ queryKey: ["group", groupId] });
+          Alert.alert("Success", "Group settings updated successfully");
           queryClient.invalidateQueries({
-            queryKey: ['group', groupId],
+            queryKey: ["group", groupId],
           });
         },
         onError: (error: any) => {
-          console.log('ERROR UPDATING GROUP:', error?.response?.data);
-          Alert.alert('Error', 'Failed to update group settings');
+          console.log("ERROR UPDATING GROUP:", error?.response?.data);
+          Alert.alert("Error", "Failed to update group settings");
           queryClient.invalidateQueries({
-            queryKey: ['group', groupId],
+            queryKey: ["group", groupId],
           });
         },
       }
@@ -144,8 +144,8 @@ const GroupSettings = () => {
 
   if (groupDataLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text style={{ color: 'white', textAlign: 'center' }}>Loading...</Text>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text style={{ color: "white", textAlign: "center" }}>Loading...</Text>
       </View>
     );
   }
@@ -153,7 +153,7 @@ const GroupSettings = () => {
   return (
     <ScreenContainer>
       <LinearGradient
-        colors={['#1a9b8e', '#16857a', '#137066']}
+        colors={["#1a9b8e", "#16857a", "#137066"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={{
@@ -165,26 +165,26 @@ const GroupSettings = () => {
         {/* Top Row - Title and Profile */}
         <View
           style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
           }}
         >
           {/* Left - Back Button + Title */}
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
             <TouchableOpacity
               onPress={() => {
                 router.back();
               }}
               style={{ marginRight: 12 }}
             >
-              <Ionicons name='arrow-back' size={24} color='#ffffff' />
+              <Ionicons name="arrow-back" size={24} color="#ffffff" />
             </TouchableOpacity>
             <Text
               style={{
                 fontSize: 24,
-                fontWeight: '600',
-                color: '#ffffff',
+                fontWeight: "600",
+                color: "#ffffff",
                 letterSpacing: 0.5,
               }}
             >
@@ -196,9 +196,9 @@ const GroupSettings = () => {
       <ScrollView style={{ paddingHorizontal: 8 }}>
         <Text
           style={{
-            color: 'white',
+            color: "white",
             fontSize: 18,
-            fontWeight: '600',
+            fontWeight: "600",
             marginBottom: 8,
             marginTop: 16,
           }}
@@ -207,46 +207,47 @@ const GroupSettings = () => {
         </Text>
         <TextInput
           style={{
-            backgroundColor: '#2a3b4d',
-            color: 'white',
+            backgroundColor: "#2a3b4d",
+            color: "white",
             padding: 12,
             borderRadius: 8,
             marginBottom: 16,
           }}
           value={groupName}
           onChangeText={setGroupName}
-          placeholder='Enter group name'
+          placeholder="Enter group name"
           placeholderTextColor={colors.gray.DEFAULT}
         />
 
         <View
           style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
             marginBottom: 8,
           }}
         >
           <Text
             style={{
-              color: 'white',
+              color: "white",
               fontSize: 18,
-              fontWeight: '600',
+              fontWeight: "600",
             }}
           >
             Members
           </Text>
           <TouchableOpacity onPress={() => setShowAddModal(true)}>
-            <AntDesign name='plus' size={24} color='white' />
+            <AntDesign name="plus" size={24} color="white" />
           </TouchableOpacity>
         </View>
         <View style={{ marginBottom: 16 }}>
-          {selectedMembers.map((member: any) => (
+          {selectedMembers.map((member: any, index: number) => (
             <TouchableOpacity
+              key={member.id || index}
               style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                backgroundColor: '#2a3b4d',
+                flexDirection: "row",
+                alignItems: "center",
+                backgroundColor: "#2a3b4d",
                 padding: 12,
                 borderRadius: 8,
                 marginBottom: 4,
@@ -262,24 +263,24 @@ const GroupSettings = () => {
                   height: 40,
                   borderRadius: 20,
                   backgroundColor: colors.gray[700],
-                  justifyContent: 'center',
-                  alignItems: 'center',
+                  justifyContent: "center",
+                  alignItems: "center",
                   marginRight: 12,
-                  overflow: 'hidden',
+                  overflow: "hidden",
                 }}
               >
                 {member.profile_picture ? (
                   <Image
                     source={{ uri: member.profile_picture }}
                     style={{ width: 40, height: 40, borderRadius: 20 }}
-                    resizeMode='cover'
+                    resizeMode="cover"
                   />
                 ) : (
                   <Text
                     style={{
-                      color: 'white',
+                      color: "white",
                       fontSize: 20,
-                      fontWeight: 'bold',
+                      fontWeight: "bold",
                     }}
                   >
                     {(member.fullname ||
@@ -292,8 +293,8 @@ const GroupSettings = () => {
               <View style={{ flex: 1 }}>
                 <Text
                   style={{
-                    color: 'white',
-                    fontWeight: '600',
+                    color: "white",
+                    fontWeight: "600",
                     fontSize: 16,
                   }}
                 >
@@ -312,33 +313,33 @@ const GroupSettings = () => {
           <>
             <Text
               style={{
-                color: 'white',
+                color: "white",
                 fontSize: 18,
-                fontWeight: '600',
+                fontWeight: "600",
                 marginBottom: 8,
               }}
             >
               Invited Emails
             </Text>
             <View
-              style={{ marginBottom: 16, display: 'flex', flexWrap: 'wrap' }}
+              style={{ marginBottom: 16, display: "flex", flexWrap: "wrap" }}
             >
               {invitedEmails.map((email: string) => (
                 <View
                   key={email}
                   style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    backgroundColor: '#2a3b4d',
+                    flexDirection: "row",
+                    alignItems: "center",
+                    backgroundColor: "#2a3b4d",
                     padding: 8,
                     borderRadius: 8,
                     marginBottom: 8,
                   }}
                 >
-                  <Text style={{ color: 'white' }}>{email}</Text>
+                  <Text style={{ color: "white" }}>{email}</Text>
                   <TouchableOpacity
                     onPress={() =>
-                      handleRemoveMember({ email, _id: 'invited' })
+                      handleRemoveMember({ email, _id: "invited" })
                     }
                   ></TouchableOpacity>
                 </View>
@@ -351,9 +352,9 @@ const GroupSettings = () => {
           <>
             <Text
               style={{
-                color: 'white',
+                color: "white",
                 fontSize: 18,
-                fontWeight: '600',
+                fontWeight: "600",
                 marginBottom: 8,
               }}
             >
@@ -365,16 +366,16 @@ const GroupSettings = () => {
                 <View
                   key={member._id}
                   style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    backgroundColor: '#2a3b4d',
+                    flexDirection: "row",
+                    alignItems: "center",
+                    backgroundColor: "#2a3b4d",
                     padding: 12,
                     borderRadius: 8,
                     marginBottom: 8,
-                    justifyContent: 'space-between',
+                    justifyContent: "space-between",
                   }}
                 >
-                  <Text style={{ color: 'white' }}>
+                  <Text style={{ color: "white" }}>
                     {member.fullname || member.username || member.email}
                   </Text>
                   <TouchableOpacity
@@ -387,8 +388,8 @@ const GroupSettings = () => {
                       borderRadius: 4,
                     }}
                   >
-                    <Text style={{ color: 'white' }}>
-                      {adminIds.includes(member._id) ? 'Admin' : 'Make Admin'}
+                    <Text style={{ color: "white" }}>
+                      {adminIds.includes(member._id) ? "Admin" : "Make Admin"}
                     </Text>
                   </TouchableOpacity>
                 </View>
@@ -401,14 +402,14 @@ const GroupSettings = () => {
             backgroundColor: colors.primary.DEFAULT,
             padding: 12,
             borderRadius: 8,
-            alignItems: 'center',
+            alignItems: "center",
             marginTop: 16,
           }}
           onPress={handleSaveSettings}
           disabled={updatingGroup}
         >
-          <Text style={{ color: 'white', fontSize: 16, fontWeight: '600' }}>
-            {updatingGroup ? 'Saving...' : 'Save Settings'}
+          <Text style={{ color: "white", fontSize: 16, fontWeight: "600" }}>
+            {updatingGroup ? "Saving..." : "Save Settings"}
           </Text>
         </TouchableOpacity>
       </ScrollView>
@@ -416,59 +417,59 @@ const GroupSettings = () => {
       <Modal
         visible={showAddModal}
         onRequestClose={() => setShowAddModal(false)}
-        animationType='none'
+        animationType="none"
         transparent={true}
       >
         <View
           style={{
             flex: 1,
-            justifyContent: 'center',
-            alignItems: 'center',
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
           }}
         >
           <View
             style={{
-              backgroundColor: '#1a252f',
+              backgroundColor: "#1a252f",
               borderRadius: 12,
               padding: 16,
-              width: '90%',
-              maxHeight: '80%',
-              minHeight: '50%',
+              width: "90%",
+              maxHeight: "80%",
+              minHeight: "50%",
             }}
           >
             <View
               style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
                 marginBottom: 16,
               }}
             >
               <Text
                 style={{
-                  color: 'white',
+                  color: "white",
                   fontSize: 20,
-                  fontWeight: '600',
+                  fontWeight: "600",
                 }}
               >
                 Add Members
               </Text>
               <TouchableOpacity onPress={() => setShowAddModal(false)}>
-                <AntDesign name='close' size={24} color='white' />
+                <AntDesign name="close" size={24} color="white" />
               </TouchableOpacity>
             </View>
             <TextInput
               style={{
-                backgroundColor: '#2a3b4d',
-                color: 'white',
+                backgroundColor: "#2a3b4d",
+                color: "white",
                 padding: 12,
                 borderRadius: 8,
                 marginBottom: 8,
               }}
               value={friendSearchQuery}
               onChangeText={setFriendSearchQuery}
-              placeholder='Search friends or enter email'
+              placeholder="Search friends or enter email"
               placeholderTextColor={colors.gray.DEFAULT}
             />
             {newAddingCustomEmail && (
@@ -482,15 +483,15 @@ const GroupSettings = () => {
                 onPress={() => {
                   handleAddMember({
                     email: newAddingCustomEmail,
-                    _id: 'custom',
+                    _id: "custom",
                   });
                 }}
               >
                 <Text
-                  style={{ color: 'white', textDecorationLine: 'underline' }}
+                  style={{ color: "white", textDecorationLine: "underline" }}
                 >
                   {newAddingCustomEmail}
-                  {'(Add as new email)'}
+                  {"(Add as new email)"}
                 </Text>
               </TouchableOpacity>
             )}
@@ -500,9 +501,9 @@ const GroupSettings = () => {
               renderItem={({ item }) => (
                 <TouchableOpacity
                   style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    backgroundColor: '#2a3b4d',
+                    flexDirection: "row",
+                    alignItems: "center",
+                    backgroundColor: "#2a3b4d",
                     padding: 12,
                     borderRadius: 8,
                     marginBottom: 4,
@@ -518,24 +519,24 @@ const GroupSettings = () => {
                       height: 40,
                       borderRadius: 20,
                       backgroundColor: colors.gray[700],
-                      justifyContent: 'center',
-                      alignItems: 'center',
+                      justifyContent: "center",
+                      alignItems: "center",
                       marginRight: 12,
-                      overflow: 'hidden',
+                      overflow: "hidden",
                     }}
                   >
                     {item.profile_picture ? (
                       <Image
                         source={{ uri: item.profile_picture }}
                         style={{ width: 40, height: 40, borderRadius: 20 }}
-                        resizeMode='cover'
+                        resizeMode="cover"
                       />
                     ) : (
                       <Text
                         style={{
-                          color: 'white',
+                          color: "white",
                           fontSize: 20,
-                          fontWeight: 'bold',
+                          fontWeight: "bold",
                         }}
                       >
                         {(item.fullname ||
@@ -548,8 +549,8 @@ const GroupSettings = () => {
                   <View style={{ flex: 1 }}>
                     <Text
                       style={{
-                        color: 'white',
-                        fontWeight: '600',
+                        color: "white",
+                        fontWeight: "600",
                         fontSize: 16,
                       }}
                     >
@@ -562,17 +563,17 @@ const GroupSettings = () => {
                 </TouchableOpacity>
               )}
               ListEmptyComponent={() => (
-                <View style={{ padding: 16, alignItems: 'center' }}>
+                <View style={{ padding: 16, alignItems: "center" }}>
                   <Text style={{ color: colors.gray.DEFAULT }}>
                     {friendsLoading
-                      ? 'Loading friends...'
-                      : 'No friends found.'}
+                      ? "Loading friends..."
+                      : "No friends found."}
                   </Text>
                 </View>
               )}
               style={{
                 maxHeight: 200,
-                backgroundColor: '#1a252f',
+                backgroundColor: "#1a252f",
                 borderRadius: 8,
                 padding: 8,
               }}

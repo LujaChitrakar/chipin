@@ -122,7 +122,7 @@ const MultisigLookup: React.FC<MultisigLookupProps> = ({ onUpdate }) => {
     <ScrollView>
       <Text>Search for Multisig Config Address</Text>
       <Text>
-        If you can't access your settings in main Squads app UI to find the
+        If you can&apos;t access your settings in main Squads app UI to find the
         multisig config address, enter your vault address below to do a search
         via onchain call.
       </Text>

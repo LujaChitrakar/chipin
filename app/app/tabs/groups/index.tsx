@@ -9,30 +9,30 @@ import {
   ActivityIndicator,
   ToastAndroid,
   RefreshControl,
-} from 'react-native';
-import React, { useEffect, useState } from 'react';
-import ScreenHeader from '@/components/navigation/ScreenHeader';
-import ScreenContainer from '@/components/ScreenContainer';
+} from "react-native";
+import React, { useEffect, useState } from "react";
+import ScreenHeader from "@/components/navigation/ScreenHeader";
+import ScreenContainer from "@/components/ScreenContainer";
 import {
   useCreateGroup,
   useGetMyGroups,
   useJoinGroupByGroupCode,
-} from '@/services/api/groupApi';
-import colors from '@/assets/colors';
+} from "@/services/api/groupApi";
+import colors from "@/assets/colors";
 import {
   AntDesign,
   Feather,
   FontAwesome,
   MaterialCommunityIcons,
   MaterialIcons,
-} from '@expo/vector-icons';
-import Button from '@/components/common/Button';
-import { useGetMyFriends } from '@/services/api/friendsApi';
-import { useRouter } from 'expo-router';
-import { Regex, X } from 'lucide-react-native';
-import { useQueryClient } from '@tanstack/react-query';
-import QRScannerScreen from '@/components/QrScannerScreen';
-import LoadingScreen from '@/components/splash/LoadingScreen';
+} from "@expo/vector-icons";
+import Button from "@/components/common/Button";
+import { useGetMyFriends } from "@/services/api/friendsApi";
+import { useRouter } from "expo-router";
+import { Regex, X } from "lucide-react-native";
+import { useQueryClient } from "@tanstack/react-query";
+import QRScannerScreen from "@/components/QrScannerScreen";
+import LoadingScreen from "@/components/splash/LoadingScreen";
 
 const GroupsPage = () => {
   const router = useRouter();
@@ -42,16 +42,16 @@ const GroupsPage = () => {
     useJoinGroupByGroupCode();
 
   const [availableMembers, setAvailableMembers] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
 
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [joinGroupModal, setShowJoinGroupModal] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
 
-  const [groupIdToJoin, setGroupIdToJoin] = useState('');
+  const [groupIdToJoin, setGroupIdToJoin] = useState("");
 
-  const [groupName, setGroupName] = useState('');
-  const [description, setDescription] = useState('');
+  const [groupName, setGroupName] = useState("");
+  const [description, setDescription] = useState("");
   const [selectedMemberEmails, setselectedMemberEmails] = useState<string[]>(
     []
   );
@@ -64,7 +64,7 @@ const GroupsPage = () => {
   const { data: myFriends, isLoading: myFriendsLoading } = useGetMyFriends({
     page: 1,
     limit: 5,
-    q: '',
+    q: "",
   });
   const queryClient = useQueryClient();
 
@@ -90,37 +90,48 @@ const GroupsPage = () => {
     createGroup(groupData, {
       onSuccess: () => {
         // Reset form and close dialog
-        setGroupName('');
-        setDescription('');
+        setGroupName("");
+        setDescription("");
         setselectedMemberEmails([]);
         setShowCreateDialog(false);
         queryClient.invalidateQueries({
-          queryKey: ['my-groups'],
+          queryKey: ["my-groups"],
         });
       },
     });
   };
 
   const handleCancel = () => {
-    setGroupName('');
-    setDescription('');
+    setGroupName("");
+    setDescription("");
     setselectedMemberEmails([]);
     setShowCreateDialog(false);
   };
 
   const handleJoinGroup = (groupCode: string) => {
+    console.log("Joining group with code:", groupCode);
     joinGroup(groupCode, {
       onSuccess: (response: any) => {
-        console.log('JOINING GROUP RESPONSE:::', response?.data);
+        console.log("JOINING GROUP RESPONSE:::", response?.data);
+        ToastAndroid.showWithGravity(
+          "Successfully joined group",
+          ToastAndroid.BOTTOM,
+          ToastAndroid.LONG
+        );
         queryClient.invalidateQueries({
-          queryKey: ['my-groups'],
+          queryKey: ["my-groups"],
         });
         setShowJoinGroupModal(false);
+        setGroupIdToJoin("");
       },
       onError: (error: any) => {
-        console.log('JOINING GROUP ERROR:::', error?.response?.data);
+        console.error("JOINING GROUP ERROR:::", error?.response?.data || error);
+        const errorMessage =
+          error?.response?.data?.message ||
+          error?.message ||
+          "Failed to join group. Please check the group code and try again.";
         ToastAndroid.showWithGravity(
-          error?.response?.data?.message || 'Failed to join',
+          errorMessage,
           ToastAndroid.BOTTOM,
           ToastAndroid.LONG
         );
@@ -130,13 +141,13 @@ const GroupsPage = () => {
 
   return (
     <ScreenContainer>
-      <ScreenHeader title='Groups' backButton={false} />
+      <ScreenHeader title="Groups" backButton={false} />
       <ScrollView
         refreshControl={
           <RefreshControl
             onRefresh={() => {
               queryClient.invalidateQueries({
-                queryKey: ['my-groups'],
+                queryKey: ["my-groups"],
               });
             }}
             refreshing={myGroupsLoading}
@@ -145,18 +156,18 @@ const GroupsPage = () => {
       >
         <View
           style={{
-            display: 'flex',
-            flexDirection: 'column',
+            display: "flex",
+            flexDirection: "column",
             gap: 10,
             paddingHorizontal: 8,
           }}
         >
           <View
             style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'flex-start',
-              width: '100%',
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "flex-start",
+              width: "100%",
               borderWidth: 1,
               flex: 1,
               borderColor: colors.gray.DEFAULT,
@@ -168,9 +179,9 @@ const GroupsPage = () => {
               marginTop: 8,
             }}
           >
-            <AntDesign name='search' size={18} color={colors.gray.DEFAULT} />
+            <AntDesign name="search" size={18} color={colors.gray.DEFAULT} />
             <TextInput
-              placeholder='Search groups...'
+              placeholder="Search groups..."
               placeholderTextColor={colors.gray.DEFAULT}
               style={{ flex: 1, color: colors.white, paddingVertical: 8 }}
               value={searchQuery}
@@ -181,16 +192,16 @@ const GroupsPage = () => {
           </View>
           <View
             style={{
-              display: 'flex',
-              flexDirection: 'row',
-              width: '100%',
-              justifyContent: 'space-around',
+              display: "flex",
+              flexDirection: "row",
+              width: "100%",
+              justifyContent: "space-around",
               gap: 8,
             }}
           >
             <Button
-              title='Group'
-              icon={<AntDesign name='plus' color={colors.white} />}
+              title="Group"
+              icon={<AntDesign name="plus" color={colors.white} />}
               backgroundColor={colors.primary[400]}
               textColor={colors.white}
               onPress={() => setShowCreateDialog(true)}
@@ -200,8 +211,8 @@ const GroupsPage = () => {
               }}
             />
             <Button
-              title='Join'
-              icon={<Feather name='users' color={colors.white} />}
+              title="Join"
+              icon={<Feather name="users" color={colors.white} />}
               backgroundColor={colors.buttonBackground.DEFAULT}
               textColor={colors.white}
               onPress={() => {
@@ -215,8 +226,8 @@ const GroupsPage = () => {
               }}
             />
             <Button
-              title='Milestone'
-              icon={<Feather name='target' color={colors.white} />}
+              title="Milestone"
+              icon={<Feather name="target" color={colors.white} />}
               backgroundColor={colors.buttonBackground.DEFAULT}
               textColor={colors.white}
               onPress={() => {}}
@@ -230,8 +241,8 @@ const GroupsPage = () => {
           </View>
           <View
             style={{
-              display: 'flex',
-              flexDirection: 'column',
+              display: "flex",
+              flexDirection: "column",
               gap: 8,
             }}
           >
@@ -239,7 +250,7 @@ const GroupsPage = () => {
               style={{
                 color: colors.gray[400],
                 fontSize: 20,
-                fontWeight: 'semibold',
+                fontWeight: "semibold",
                 marginTop: 8,
               }}
             >
@@ -252,9 +263,9 @@ const GroupsPage = () => {
                   router.push(`/tabs/groups/${group._id}`);
                 }}
                 style={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  alignItems: 'center',
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
                   paddingVertical: 8,
                   paddingHorizontal: 8,
                   backgroundColor: colors.cardBackground.dark,
@@ -267,57 +278,63 @@ const GroupsPage = () => {
                   backgroundColor={
                     group.settled ? colors.primary[400] : colors.primary.DEFAULT
                   }
-                  title=''
+                  title=""
                   icon={
                     group.settled ? (
-                      <MaterialIcons name='done' size={24} />
+                      <MaterialIcons name="done" size={24} />
                     ) : (
-                      <Feather name='users' size={24} />
+                      <Feather name="users" size={24} />
                     )
                   }
                   onPress={() => {}}
                   style={{
                     borderRadius: 16,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                   }}
                 />
                 <View
                   style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'flex-start',
-                    justifyContent: 'center',
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "flex-start",
+                    justifyContent: "center",
                     marginLeft: 12,
                     gap: 6,
                   }}
                 >
                   <View
                     style={{
-                      display: 'flex',
-                      flexDirection: 'row',
+                      display: "flex",
+                      flexDirection: "row",
                       gap: 8,
                     }}
                   >
                     <Text style={{ color: colors.white, fontSize: 16 }}>
                       {group.name}
                     </Text>
-                    {group.settled && <Text style={{
-                      color: colors.white,
-                      backgroundColor: colors.primary.DEFAULT,
-                      paddingHorizontal: 8,
-                      borderRadius: 8
-                    }}>Settled</Text>}
+                    {group.settled && (
+                      <Text
+                        style={{
+                          color: colors.white,
+                          backgroundColor: colors.primary.DEFAULT,
+                          paddingHorizontal: 8,
+                          borderRadius: 8,
+                        }}
+                      >
+                        Settled
+                      </Text>
+                    )}
                   </View>
                   <Text style={{ color: colors.gray[400] }}>
                     {group.members.length} members
                   </Text>
                 </View>
                 <FontAwesome
-                  name='angle-right'
+                  name="angle-right"
                   style={{
-                    marginLeft: 'auto',
+                    marginLeft: "auto",
                     marginRight: 8,
                   }}
                   size={18}
@@ -332,20 +349,32 @@ const GroupsPage = () => {
       <Modal
         visible={showScanner}
         transparent
-        animationType='fade'
+        animationType="fade"
         onRequestClose={() => setShowScanner(false)}
       >
         <View style={styles.modalOverlay}>
           <QRScannerScreen
             styles={{}}
             onScan={(data) => {
-              if (/^[a-zA-Z0-9]{4,8}$/.test(data)) {
-                setGroupIdToJoin(data);
-                setShowScanner(false);
-                handleJoinGroup(data);
-              } else {
+              try {
+                console.log("QR Data received:", data);
+                if (/^[a-zA-Z0-9]{4,8}$/.test(data)) {
+                  console.log("Group ID extracted:", data);
+                  setGroupIdToJoin(data);
+                  setShowScanner(false);
+                  handleJoinGroup(data);
+                } else {
+                  console.log("Invalid group ID format in QR data:", data);
+                  ToastAndroid.showWithGravity(
+                    "Invalid QR code format",
+                    ToastAndroid.SHORT,
+                    ToastAndroid.BOTTOM
+                  );
+                }
+              } catch (error) {
+                console.error("Error processing QR code:", error);
                 ToastAndroid.showWithGravity(
-                  'Invalid QR',
+                  "Error processing QR code",
                   ToastAndroid.SHORT,
                   ToastAndroid.BOTTOM
                 );
@@ -359,7 +388,7 @@ const GroupsPage = () => {
       <Modal
         visible={joinGroupModal}
         transparent
-        animationType='fade'
+        animationType="fade"
         onRequestClose={() => setShowJoinGroupModal(false)}
       >
         <View style={styles.modalOverlay}>
@@ -386,12 +415,12 @@ const GroupsPage = () => {
                 <View style={styles.emailInput}>
                   <Regex size={20} color={colors.gray.DEFAULT} />
                   <TextInput
-                    placeholder='Enter Group code'
+                    placeholder="Enter Group code"
                     placeholderTextColor={colors.gray.DEFAULT}
                     value={groupIdToJoin}
                     onChangeText={setGroupIdToJoin}
-                    keyboardType='email-address'
-                    autoCapitalize='none'
+                    keyboardType="email-address"
+                    autoCapitalize="none"
                     style={styles.emailTextInput}
                   />
                 </View>
@@ -404,7 +433,7 @@ const GroupsPage = () => {
                   style={styles.qrButton}
                 >
                   <MaterialCommunityIcons
-                    name='qrcode'
+                    name="qrcode"
                     size={20}
                     color={colors.white}
                   />
@@ -435,7 +464,7 @@ const GroupsPage = () => {
                 disabled={!groupIdToJoin.trim() || joiningGroup}
               >
                 {joiningGroup ? (
-                  <ActivityIndicator size='small' color='white' />
+                  <ActivityIndicator size="small" color="white" />
                 ) : (
                   <Text style={styles.confirmButtonText}>Add Friend</Text>
                 )}
@@ -449,34 +478,34 @@ const GroupsPage = () => {
       <Modal
         visible={showCreateDialog}
         transparent={true}
-        animationType='fade'
+        animationType="fade"
         onRequestClose={handleCancel}
       >
         <View
           style={{
             flex: 1,
-            backgroundColor: 'rgba(0, 0, 0, 0.7)',
-            justifyContent: 'center',
-            alignItems: 'center',
+            backgroundColor: "rgba(0, 0, 0, 0.7)",
+            justifyContent: "center",
+            alignItems: "center",
             padding: 20,
           }}
         >
           <View
             style={{
-              backgroundColor: colors.gray[800] || '#1e293b',
+              backgroundColor: colors.gray[800] || "#1e293b",
               borderRadius: 12,
               padding: 24,
-              width: '100%',
+              width: "100%",
               maxWidth: 500,
-              maxHeight: '80%',
+              maxHeight: "80%",
             }}
           >
             {/* Header */}
             <View
               style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
                 marginBottom: 24,
               }}
             >
@@ -484,13 +513,13 @@ const GroupsPage = () => {
                 style={{
                   color: colors.white,
                   fontSize: 24,
-                  fontWeight: 'bold',
+                  fontWeight: "bold",
                 }}
               >
                 Create New Group
               </Text>
               <TouchableOpacity onPress={handleCancel}>
-                <Feather name='x' size={24} color={colors.gray[400]} />
+                <Feather name="x" size={24} color={colors.gray[400]} />
               </TouchableOpacity>
             </View>
 
@@ -509,16 +538,16 @@ const GroupsPage = () => {
                 <TextInput
                   value={groupName}
                   onChangeText={setGroupName}
-                  placeholder='e.g., Weekend Trip, Apartment 4B'
+                  placeholder="e.g., Weekend Trip, Apartment 4B"
                   placeholderTextColor={colors.gray[500]}
                   style={{
-                    backgroundColor: colors.gray[700] || '#334155',
+                    backgroundColor: colors.gray[700] || "#334155",
                     color: colors.white,
                     borderRadius: 8,
                     padding: 12,
                     fontSize: 16,
                     borderWidth: 1,
-                    borderColor: colors.gray[600] || '#475569',
+                    borderColor: colors.gray[600] || "#475569",
                   }}
                 />
               </View>
@@ -537,19 +566,19 @@ const GroupsPage = () => {
                 <TextInput
                   value={description}
                   onChangeText={setDescription}
-                  placeholder='What is this group for?'
+                  placeholder="What is this group for?"
                   placeholderTextColor={colors.gray[500]}
                   multiline
                   numberOfLines={4}
                   style={{
-                    backgroundColor: colors.gray[700] || '#334155',
+                    backgroundColor: colors.gray[700] || "#334155",
                     color: colors.white,
                     borderRadius: 8,
                     padding: 12,
                     fontSize: 16,
                     borderWidth: 1,
-                    borderColor: colors.gray[600] || '#475569',
-                    textAlignVertical: 'top',
+                    borderColor: colors.gray[600] || "#475569",
+                    textAlignVertical: "top",
                     minHeight: 100,
                   }}
                 />
@@ -568,10 +597,10 @@ const GroupsPage = () => {
                 </Text>
                 <View
                   style={{
-                    backgroundColor: colors.gray[700] || '#334155',
+                    backgroundColor: colors.gray[700] || "#334155",
                     borderRadius: 8,
                     borderWidth: 1,
-                    borderColor: colors.gray[600] || '#475569',
+                    borderColor: colors.gray[600] || "#475569",
                     maxHeight: 200,
                   }}
                 >
@@ -580,12 +609,12 @@ const GroupsPage = () => {
                       key={member._id}
                       onPress={() => toggleMemberSelection(member.email)}
                       style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
+                        flexDirection: "row",
+                        alignItems: "center",
                         padding: 12,
                         borderBottomWidth:
                           index < availableMembers.length - 1 ? 1 : 0,
-                        borderBottomColor: colors.gray[600] || '#475569',
+                        borderBottomColor: colors.gray[600] || "#475569",
                       }}
                     >
                       <View
@@ -601,15 +630,15 @@ const GroupsPage = () => {
                             member.id
                           )
                             ? colors.primary.DEFAULT
-                            : 'transparent',
+                            : "transparent",
                           marginRight: 12,
-                          justifyContent: 'center',
-                          alignItems: 'center',
+                          justifyContent: "center",
+                          alignItems: "center",
                         }}
                       >
                         {selectedMemberEmails.includes(member.email) && (
                           <Feather
-                            name='check'
+                            name="check"
                             size={16}
                             color={colors.white}
                           />
@@ -643,7 +672,7 @@ const GroupsPage = () => {
             {/* Action Buttons */}
             <View
               style={{
-                flexDirection: 'row',
+                flexDirection: "row",
                 gap: 12,
                 marginTop: 24,
               }}
@@ -652,17 +681,17 @@ const GroupsPage = () => {
                 onPress={handleCancel}
                 style={{
                   flex: 1,
-                  backgroundColor: colors.gray[700] || '#334155',
+                  backgroundColor: colors.gray[700] || "#334155",
                   padding: 16,
                   borderRadius: 8,
-                  alignItems: 'center',
+                  alignItems: "center",
                 }}
               >
                 <Text
                   style={{
                     color: colors.white,
                     fontSize: 16,
-                    fontWeight: '600',
+                    fontWeight: "600",
                   }}
                 >
                   Cancel
@@ -676,20 +705,20 @@ const GroupsPage = () => {
                   backgroundColor:
                     !groupName.trim() || creatingGroup
                       ? colors.gray[600]
-                      : colors.primary.DEFAULT || '#10b981',
+                      : colors.primary.DEFAULT || "#10b981",
                   padding: 16,
                   borderRadius: 8,
-                  alignItems: 'center',
+                  alignItems: "center",
                 }}
               >
                 <Text
                   style={{
                     color: colors.white,
                     fontSize: 16,
-                    fontWeight: '600',
+                    fontWeight: "600",
                   }}
                 >
-                  {creatingGroup ? 'Creating...' : 'Create Group'}
+                  {creatingGroup ? "Creating..." : "Create Group"}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -703,37 +732,37 @@ const GroupsPage = () => {
 const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    justifyContent: "center",
+    alignItems: "center",
     paddingHorizontal: 16,
   },
   modalContainer: {
     backgroundColor: colors.cardBackground.DEFAULT,
     borderRadius: 24,
-    width: '100%',
+    width: "100%",
     maxWidth: 400,
     borderWidth: 1,
     borderColor: colors.cardBackground.DEFAULT,
   },
   modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     padding: 20,
     borderBottomWidth: 1,
     borderBottomColor: colors.cardBackground.DEFAULT,
   },
   modalTitle: {
     color: colors.white,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     fontSize: 20,
   },
   closeButton: {
     width: 32,
     height: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   modalContent: {
     padding: 20,
@@ -741,15 +770,15 @@ const styles = StyleSheet.create({
   inputLabel: {
     color: colors.white,
     marginBottom: 12,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   emailInput: {
     backgroundColor: colors.background.DEFAULT,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     borderWidth: 1,
     borderColor: colors.cardBackground.DEFAULT,
   },
@@ -761,12 +790,12 @@ const styles = StyleSheet.create({
   },
   orText: {
     color: colors.gray[100],
-    marginHorizontal: 'auto',
+    marginHorizontal: "auto",
     marginVertical: 8,
-    textAlign: 'center',
+    textAlign: "center",
   },
   modalActions: {
-    flexDirection: 'row',
+    flexDirection: "row",
     padding: 20,
     gap: 12,
   },
@@ -775,13 +804,13 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background.DEFAULT,
     paddingVertical: 16,
     borderRadius: 12,
-    alignItems: 'center',
+    alignItems: "center",
     borderWidth: 1,
     borderColor: colors.gray.DEFAULT,
   },
   cancelButtonText: {
     color: colors.white,
-    fontWeight: '600',
+    fontWeight: "600",
     fontSize: 16,
   },
   confirmButton: {
@@ -789,21 +818,21 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary.DEFAULT,
     paddingVertical: 16,
     borderRadius: 12,
-    alignItems: 'center',
+    alignItems: "center",
   },
   confirmButtonDisabled: {
     opacity: 0.5,
   },
   confirmButtonText: {
-    color: 'white',
-    fontWeight: '600',
+    color: "white",
+    fontWeight: "600",
     fontSize: 16,
   },
   qrButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.gray[700] || '#334155',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.gray[700] || "#334155",
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 8,
@@ -812,7 +841,7 @@ const styles = StyleSheet.create({
   qrButtonText: {
     color: colors.white,
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });
 
