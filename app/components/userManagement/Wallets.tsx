@@ -19,9 +19,7 @@ export default function Wallets() {
     });
   };
   return (
-    <View
-      style={GlobalStyles.screenContainer}
-    >
+    <View style={GlobalStyles.screenContainer}>
       <Text>Wallets</Text>
 
       <View
