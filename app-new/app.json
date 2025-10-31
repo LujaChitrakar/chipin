@@ -1,0 +1,113 @@
+{
+  "expo": {
+    "name": "Chipin",
+    "slug": "chipin",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "chipin",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/images/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0E0E0E"
+    },
+    "ios": {
+      "usesAppleSignIn": true,
+      "supportsTablet": true,
+      "bundleIdentifier": "com.chipin.app",
+      "associatedDomains": [
+        "webcredentials:chipinapp.xyz",
+        "applinks:chipinapp.xyz"
+      ],
+      "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true
+        }
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#0E0E0E"
+      },
+      
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "chipinapp.xyz",
+              "pathPrefix": "/oauth"
+            },
+            {
+              "scheme": "https",
+              "host": "www.chipinapp.xyz",
+              "pathPrefix": "/oauth"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        },
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "chipinapp.xyz"
+            },
+            {
+              "scheme": "https",
+              "host": "www.chipinapp.xyz"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
+      ],
+      "config": {
+        "googleSignIn": {
+          "certificateHash": "5C:9D:8D:1C:6A:0B:08:36:FB:D1:9A:C1:19:21:6F:97:E6:54:B7:1C:23:D9:68:47:20:41:8E:5A:2F:36:FF:D3"
+        }
+      },
+      "package": "com.chipin.app"
+    },
+    "extra": {
+      "privyAppId": "cmgf4iucb018ll80dsbkmcspc",
+      "privyClientId": "client-WY6RaX9RVqTx1ncqj9U1pruwhqCyjDhzmBXufNnfLR8Y8",
+      "passkeyAssociatedDomain": "https://chipinapp.xyz",
+      "router": {},
+      "eas": {
+        "projectId": "2fde7765-4859-4134-b551-f0a84f422006"
+      }
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-apple-authentication",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "deploymentTarget": "17.5"
+          },
+          "android": {
+            "compileSdkVersion": 35
+          }
+        }
+      ],
+      "expo-font",
+      "expo-web-browser"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
