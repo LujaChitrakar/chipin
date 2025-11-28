@@ -10,7 +10,7 @@ import {
   ToastAndroid,
   ActivityIndicator,
 } from 'react-native';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import colors from '@/assets/colors';
 import QRScannerScreen from '../QrScannerScreen';
 import {
@@ -31,6 +31,8 @@ import { useCreateMoneyLentActivity } from '@/services/api/recentsApi';
 import { useGetMyProfile } from '@/services/api/authApi';
 import WalletAddressDisplay from '../common/WalletAddressDisplay';
 import { useQueryClient } from "@tanstack/react-query";
+import PasskeyAuth from '../common/PassKeyAuth';
+import LoadingScreen from '../splash/LoadingScreen';
 
 const SendMoneyModal = ({
   visible,
@@ -49,6 +51,9 @@ const SendMoneyModal = ({
   const [purpose, setPurpose] = useState('');
   const [targetPublicKey, setTargetPublicKey] = useState('');
   const [visibleDropdown, setVisibleDropdown] = useState(false);
+  const [visibleAuthentication, setVisibleAuthentication] = useState(false)
+  const [_, setIsTransactionAuthenticated] = useState(false)//Here isTransaction is not used so replaced by '_'
+
   const [selectedFriend, setSelectedFriend] = useState<any>();
   const { data: friendsData, isLoading: myFriendsLoading } = useGetMyFriends({
     page: 1,
@@ -71,81 +76,211 @@ const SendMoneyModal = ({
   const { mutate: addRecentActivity, isPending: addingRecentActivity } =
     useCreateMoneyLentActivity();
 
-  const handleSend = () => {
-    if (!wallets || wallets.length === 0) {
-      ToastAndroid.showWithGravity(
-        'Wallet not initialized. Please wait few seconds',
-        ToastAndroid.LONG,
-        ToastAndroid.BOTTOM+20
-      );
-      return;
-    }
+  const handleTransaction = (isAuthenticated: boolean = false) => {
+    console.log("during transacting", isAuthenticated)
 
-    if (activeTab === 'Direct' && sendTo === 'friends' && !selectedFriend) {
-      ToastAndroid.showWithGravity(
-        'Please select the friend to send money',
-        ToastAndroid.LONG,
-        ToastAndroid.BOTTOM+20
-      );
-      return;
-    }
-    if (activeTab === 'Direct' && sendTo === 'publickey' && !targetPublicKey) {
-      ToastAndroid.showWithGravity(
-        'Please enter the public key',
-        ToastAndroid.LONG,
-        ToastAndroid.BOTTOM+20
-      );
-      return;
-    }
+    try {
+      if (isAuthenticated) {
+        console.log("after transacting")
+        setVisibleAuthentication(false)
 
-    let receipientWalletAddress = selectedFriend?.wallet_public_key;
-    if (
-      activeTab === 'QR' ||
-      (activeTab === 'Direct' && sendTo === 'publickey')
-    ) {
-      receipientWalletAddress = targetPublicKey;
-    }
-
-    sendMoney(
-      {
-        amount: Number(amount),
-        recipient: receipientWalletAddress,
-        wallet: wallets[0],
-      },
-      {
-        onSuccess: (response) => {
-          addRecentActivity({
-            lenderId: myProfile?.data?._id,
-            borrowerId: sendTo === 'publickey' ? null : selectedFriend?._id,
-            amount,
-            transactionId: response?.transactionId,
-            lender_wallet_address: response?.paid_by_address,
-            borrower_wallet_address: response?.paid_to_address,
-            activityType: 'SENT_MONEY',
-          });
-          queryClient.invalidateQueries({
-            queryKey: ["wallet-balance"],
-          });
+        if (!wallets || wallets.length === 0) {
+          console.log("line 1")
           ToastAndroid.showWithGravity(
-            `${amount} was sent to ${
-              sendTo === 'publickey'
-                ? targetPublicKey
-                : selectedFriend?.fullname ||
+            'Wallet not initialized. Please wait few seconds',
+            ToastAndroid.LONG,
+            ToastAndroid.BOTTOM + 20
+          );
+          return;
+        }
+
+        if (activeTab === 'Direct' && sendTo === 'friends' && !selectedFriend) {
+          ToastAndroid.showWithGravity(
+            'Please select the friend to send money',
+            ToastAndroid.LONG,
+            ToastAndroid.BOTTOM + 20
+          );
+          return;
+        }
+        if (activeTab === 'Direct' && sendTo === 'publickey' && !targetPublicKey) {
+          console.log("line 2")
+
+          ToastAndroid.showWithGravity(
+            'Please enter the public key',
+            ToastAndroid.LONG,
+            ToastAndroid.BOTTOM + 20
+          );
+          return;
+        }
+
+        let receipientWalletAddress = selectedFriend?.wallet_public_key;
+        if (
+          activeTab === 'QR' ||
+          (activeTab === 'Direct' && sendTo === 'publickey')
+        ) {
+          receipientWalletAddress = targetPublicKey;
+          console.log("line 3", receipientWalletAddress)
+
+        }
+
+        sendMoney(
+          {
+            amount: Number(amount),
+            recipient: receipientWalletAddress,
+            wallet: wallets[0],
+          },
+          {
+            onSuccess: (response) => {
+              addRecentActivity({
+                lenderId: myProfile?.data?._id,
+                borrowerId: sendTo === 'publickey' ? null : selectedFriend?._id,
+                amount,
+                transactionId: response?.transactionId,
+                lender_wallet_address: response?.paid_by_address,
+                borrower_wallet_address: response?.paid_to_address,
+                activityType: 'SENT_MONEY',
+              });
+              queryClient.invalidateQueries({
+                queryKey: ["wallet-balance"],
+              });
+              ToastAndroid.showWithGravity(
+                `${amount} was sent to ${sendTo === 'publickey'
+                  ? targetPublicKey
+                  : selectedFriend?.fullname ||
                   selectedFriend?.username ||
                   selectedFriend?.email
-            }`,
-            ToastAndroid.LONG,
-            ToastAndroid.BOTTOM+30
-          );
-          
-          handleRescan();
-          setAmount('');
-          setPurpose('');
-          setTargetPublicKey('');
-          setVisible(false);
-        },
+                }`,
+                ToastAndroid.LONG,
+                ToastAndroid.BOTTOM + 30
+              );
+              console.log("line 4 success")
+
+
+              //       handleRescan();
+              //       setAmount('');
+              //       setPurpose('');
+              // setVisible(false);
+              //       setTargetPublicKey('');
+            },
+            onError: (err) => {
+
+              ToastAndroid.showWithGravity(
+                'Transaction failed: ' + (err.message || 'Unknown error'),
+                ToastAndroid.LONG,
+                ToastAndroid.BOTTOM + 30);
+
+              console.log("line 5 error", err)
+            }
+          }
+        );
+
       }
-    );
+
+      // setTimeout(() => {
+      //   console.log("The transaction ", isAuthenticated)
+      //   setIsTransactionAuthenticated(false)
+      //   setVisible(false)
+      // }, 3000)
+
+
+
+    } catch (err) {
+      console.log("Error while transacting", err)
+    } finally {
+      setIsTransactionAuthenticated(false)
+      handleRescan();
+      setAmount('');
+      setPurpose('');
+      setVisible(false);
+      setTargetPublicKey('');
+
+    }
+
+  }
+
+  const handleSend = () => {
+    setVisibleAuthentication(true)
+    console.log("before transacting")
+    // if (isTransactionAuthenticated) {
+    //   console.log("after transacting")
+
+    //   if (!wallets || wallets.length === 0) {
+    //     ToastAndroid.showWithGravity(
+    //       'Wallet not initialized. Please wait few seconds',
+    //       ToastAndroid.LONG,
+    //       ToastAndroid.BOTTOM + 20
+    //     );
+    //     return;
+    //   }
+
+    //   if (activeTab === 'Direct' && sendTo === 'friends' && !selectedFriend) {
+    //     ToastAndroid.showWithGravity(
+    //       'Please select the friend to send money',
+    //       ToastAndroid.LONG,
+    //       ToastAndroid.BOTTOM + 20
+    //     );
+    //     return;
+    //   }
+    //   if (activeTab === 'Direct' && sendTo === 'publickey' && !targetPublicKey) {
+    //     ToastAndroid.showWithGravity(
+    //       'Please enter the public key',
+    //       ToastAndroid.LONG,
+    //       ToastAndroid.BOTTOM + 20
+    //     );
+    //     return;
+    //   }
+
+    //   let receipientWalletAddress = selectedFriend?.wallet_public_key;
+    //   if (
+    //     activeTab === 'QR' ||
+    //     (activeTab === 'Direct' && sendTo === 'publickey')
+    //   ) {
+    //     receipientWalletAddress = targetPublicKey;
+    //   }
+
+    //   sendMoney(
+    //     {
+    //       amount: Number(amount),
+    //       recipient: receipientWalletAddress,
+    //       wallet: wallets[0],
+    //     },
+    //     {
+    //       onSuccess: (response) => {
+    //         addRecentActivity({
+    //           lenderId: myProfile?.data?._id,
+    //           borrowerId: sendTo === 'publickey' ? null : selectedFriend?._id,
+    //           amount,
+    //           transactionId: response?.transactionId,
+    //           lender_wallet_address: response?.paid_by_address,
+    //           borrower_wallet_address: response?.paid_to_address,
+    //           activityType: 'SENT_MONEY',
+    //         });
+    //         queryClient.invalidateQueries({
+    //           queryKey: ["wallet-balance"],
+    //         });
+    //         ToastAndroid.showWithGravity(
+    //           `${amount} was sent to ${sendTo === 'publickey'
+    //             ? targetPublicKey
+    //             : selectedFriend?.fullname ||
+    //             selectedFriend?.username ||
+    //             selectedFriend?.email
+    //           }`,
+    //           ToastAndroid.LONG,
+    //           ToastAndroid.BOTTOM + 30
+    //         );
+
+    //         handleRescan();
+    //         setAmount('');
+    //         setPurpose('');
+    //         setTargetPublicKey('');
+    //         setIsTransactionAuthenticated(false)
+    //         setVisible(false);
+    //       },
+    //     }
+    //   );
+
+    // }
+
   };
 
   // Reset function for Rescan button
@@ -259,6 +394,13 @@ const SendMoneyModal = ({
       </View>
     );
   };
+
+  if (sendingMoney) {
+    return (
+      <View style={{ flex: 1, backgroundColor: colors.background.DEFAULT }}>
+        <LoadingScreen />
+      </View>)
+  }
 
   return (
     <Modal
@@ -715,6 +857,20 @@ const SendMoneyModal = ({
           </View>
         </View>
       </View>
+
+
+
+
+      <Modal
+        visible={visibleAuthentication}
+        transparent
+        animationType='fade'
+        onRequestClose={() => setVisibleAuthentication(false)}
+      >
+        <PasskeyAuth setIsAuthenticated={setIsTransactionAuthenticated} handleTransaction={handleTransaction} />
+      </Modal>
+
+
       <Modal
         visible={visibleDropdown}
         transparent
@@ -798,6 +954,8 @@ const SendMoneyModal = ({
         </View>
       </Modal>
     </Modal>
+
+
   );
 };
 

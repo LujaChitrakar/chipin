@@ -8,8 +8,9 @@ import {
 } from '@expo-google-fonts/outfit';
 import { useFonts } from "expo-font";
 import { useColorScheme } from "react-native";
-import { Slot } from "expo-router";
+import { Slot, Stack } from "expo-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import colors from '@/assets/colors';
 
 export default function RootLayout() {
   useFonts({
