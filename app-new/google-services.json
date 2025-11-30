@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "591016278934",
+    "project_id": "chipin-d7217",
+    "storage_bucket": "chipin-d7217.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:591016278934:android:3c51c52136ed1bd16dfbb7",
+        "android_client_info": {
+          "package_name": "com.chipin.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDd_XQLMAN2CCO_2CjHAabdJXQKImWDJws"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

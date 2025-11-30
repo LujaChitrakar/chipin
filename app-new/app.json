@@ -31,11 +31,11 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#0E0E0E"
       },
-      
       "intentFilters": [
         {
           "action": "VIEW",
           "autoVerify": true,
+          "googleServicesFile": "./google-services.json",
           "data": [
             {
               "scheme": "https",
@@ -48,10 +48,7 @@
               "pathPrefix": "/oauth"
             }
           ],
-          "category": [
-            "BROWSABLE",
-            "DEFAULT"
-          ]
+          "category": ["BROWSABLE", "DEFAULT"]
         },
         {
           "action": "VIEW",
@@ -66,10 +63,7 @@
               "host": "www.chipinapp.xyz"
             }
           ],
-          "category": [
-            "BROWSABLE",
-            "DEFAULT"
-          ]
+          "category": ["BROWSABLE", "DEFAULT"]
         }
       ],
       "config": {
@@ -85,7 +79,7 @@
       "passkeyAssociatedDomain": "https://chipinapp.xyz",
       "router": {},
       "eas": {
-        "projectId": "2fde7765-4859-4134-b551-f0a84f422006"
+        "projectId": "ad338fd6-3ac7-407f-bfa9-e7065bf77ed2"
       }
     },
     "plugins": [
@@ -108,6 +102,7 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "owner": "luja"
   }
 }
