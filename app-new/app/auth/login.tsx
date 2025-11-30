@@ -11,9 +11,12 @@ import Constants from 'expo-constants';
 import Button from '@/components/common/Button';
 
 const Login = () => {
+
   const { login } = useLogin();
 
+
   const router = useRouter();
+
 
   const handleLogin = () => {
     login({ loginMethods: ['email'] })
@@ -21,7 +24,7 @@ const Login = () => {
         console.log('User logged in', session.user);
         router.navigate('/');
       })
-      .catch((err) => {});
+      .catch((err) => { console.log(err) });
   };
 
   return (

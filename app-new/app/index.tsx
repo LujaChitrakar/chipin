@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Text, ToastAndroid, View } from 'react-native';
 import Constants from 'expo-constants';
 import { usePrivy } from '@privy-io/expo';
@@ -7,19 +7,24 @@ import colors from '@/assets/colors';
 import LoadingScreen from '@/components/splash/LoadingScreen';
 import { useLoginWithPrivy } from '@/services/api/authApi';
 import { extractPrivyIdAndEmailFromPrivyUser } from '@/utils/privyUtils';
+import * as LocalAuthentication from 'expo-local-authentication'
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function Index() {
   const router = useRouter();
   const { user, isReady: ready } = usePrivy(); // "ready" tells when Privy has finished initializing
-
   const {
     mutate: loginToApiWithPrivy,
     isPending: loggingIn,
     error: loginError,
   } = useLoginWithPrivy();
 
+
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
+
   // ✅ Navigate only after Privy is ready
   useEffect(() => {
+    console.log("Current User", user)
     if (!ready) return;
 
     if (user) {
@@ -43,8 +48,21 @@ export default function Index() {
     }
   }, [user, ready]);
 
+  useEffect(() => {
+
+    if (user) {
+
+      (async () => {
+        const res = await LocalAuthentication.authenticateAsync({ promptMessage: "Please authenticate", promptSubtitle: "Via pin or fingerprint" })
+        setIsAuthenticated(res.success)
+        console.log(res)
+      })()
+    }
+  }, [loggingIn, ready])
+
   // ✅ Show splash/loading until Privy is ready
   if (!ready || loggingIn) {
+    console.log("Am ready", ready, "LogginIN", loggingIn)
     return (
       <View style={{ flex: 1, backgroundColor: colors.background.DEFAULT }}>
         <LoadingScreen />
@@ -103,19 +121,29 @@ export default function Index() {
       </View>
     );
   }
+
+
+
   return (
     <View style={{ flex: 1, backgroundColor: colors.background.DEFAULT }}>
-      <Stack
-        screenOptions={{
-          headerStyle: { backgroundColor: colors.primary.DEFAULT },
-          headerTintColor: colors.white,
-          headerTitleStyle: { fontWeight: 'bold' },
-        }}
-      >
-        <Stack.Screen name='auth/login' options={{ headerShown: false }} />
-        <Stack.Screen name='tabs' options={{ headerShown: false }} />
-        <Stack.Screen name='notabs' options={{ headerShown: false }} />
-      </Stack>
+      {isAuthenticated ?
+        <Stack
+          screenOptions={{
+            headerStyle: { backgroundColor: colors.primary.DEFAULT },
+            headerTintColor: colors.white,
+            headerTitleStyle: { fontWeight: 'bold' },
+          }}
+        >
+          <Stack.Screen name='auth/login' options={{ headerShown: false }} />
+          <Stack.Screen name='tabs' options={{ headerShown: false }} />
+          <Stack.Screen name='notabs' options={{ headerShown: false }} />
+        </Stack>
+        :
+
+        <SafeAreaView>
+          <Text>You aren't authenticated</Text>
+        </SafeAreaView>
+      }
     </View>
   );
 }

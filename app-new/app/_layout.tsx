@@ -13,11 +13,18 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 export default function RootLayout() {
   useFonts({
-   Outfit_400Regular,
-   Outfit_500Medium,
-   Outfit_600SemiBold,
+    Outfit_400Regular,
+    Outfit_500Medium,
+    Outfit_600SemiBold,
   });
   const colorScheme = useColorScheme() ?? "dark";
+  // console.log("Yo mate this is in the layout", user)
+  // useEffect(() => {
+  //   (async () => {
+  //     const res = LocalAuthentication.authenticateAsync({ promptMessage: "Please authenticate", promptSubtitle: "Via pin or fingerprint" })
+  //     console.log(res)
+  //   })()
+  // }, [])
   return (
     <PrivyProvider
       appId={Constants.expoConfig?.extra?.privyAppId}
