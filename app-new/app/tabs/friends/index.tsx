@@ -28,6 +28,7 @@ import LendBorrowButton from '@/components/friends/LendBorrowButtons';
 import Button from '@/components/common/Button';
 import FriendRequestCard from '@/components/friends/FriendRequestCard';
 import FriendCard from '@/components/friends/FriendCard';
+import PushNotificationManager from '@/components/notiification/PushNotificationManager';
 
 const FriendsPage = () => {
   const queryClient = useQueryClient();
@@ -144,23 +145,55 @@ const FriendsPage = () => {
     setRequestsPage(1);
   };
 
+  function handleBackend() {
+    const arrUsers = ['User A', 'User B', 'User C', 'User D', 'User E']
+    const arrUser = arrUsers[Math.floor(Math.random() * 5)]
+    const loginData = {
+      name: arrUser,
+      token: "token" + arrUser
+    }
+
+    const notificationData = {
+      token: "ExponentPushToken[kxwc9hGkCFD4ZDOMw7ElrF]",
+      title: "Friend request",
+      body: "Someone is interested in you, tap here to see who",
+      metadata: {}
+    }
+
+
+    fetch('http://192.168.1.122:8000/api/notification', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify(notificationData)
+    }).then((res: any) => {
+      return res.json()
+    }).then((data) => {
+      console.log(data)
+    }).catch((err) => console.log("Error is", err))
+  }
+
+
   const handleSendFriendRequest = (email: string) => {
     sendFriendRequest(email, {
       onSuccess: () => {
         ToastAndroid.showWithGravity(
           'Friend request sent',
           ToastAndroid.SHORT,
-          ToastAndroid.BOTTOM+20
+          ToastAndroid.BOTTOM + 20
         );
         setShowAddFriendModal(false);
         setFriendEmail('');
+
         queryClient.invalidateQueries({ queryKey: ['my-friend-requests'] });
       },
       onError: (error: any) => {
         ToastAndroid.showWithGravity(
           error?.response?.data?.message || 'Failed to send request',
           ToastAndroid.LONG,
-          ToastAndroid.BOTTOM+20
+          ToastAndroid.BOTTOM + 20
         );
       },
     });
@@ -389,7 +422,7 @@ const FriendsPage = () => {
                 ToastAndroid.showWithGravity(
                   'No valid email found in QR code',
                   ToastAndroid.LONG,
-                  ToastAndroid.BOTTOM+20
+                  ToastAndroid.BOTTOM + 20
                 );
                 setShowScanner(false);
                 setShowAddFriendModal(false);

@@ -35,6 +35,8 @@ const userSchema = mongoose.Schema({
         wallet_purpose: required_string,
     }],
 
+    notification_expo_push_token: { type: string },
+
 
     // Onboarding and referal fields
     onboarding_completed: { type: Boolean, default: false },

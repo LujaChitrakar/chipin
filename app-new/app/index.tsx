@@ -11,6 +11,8 @@ import * as LocalAuthentication from 'expo-local-authentication'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import PasskeyAuth from '@/components/common/PassKeyAuth';
 import { axiosInstance } from '@/services/api/apiConstants';
+import PushNotificationManager from '@/components/notiification/PushNotificationManager';
+// import PushNotificationManager fr om '@/components/notiification/PushNotificationManager';
 
 export default function Index() {
   const router = useRouter();
@@ -34,7 +36,7 @@ export default function Index() {
       // @ts-ignore
       loginToApiWithPrivy(extractPrivyIdAndEmailFromPrivyUser(user), {
         onSuccess: (response) => {
-          console.log('LOGIN SUCCESS::', response);
+          // console.log('LOGIN SUCCESS::', response);
 
         },
         onError: (e: any) => {
@@ -75,7 +77,6 @@ export default function Index() {
 
   // ✅ Show splash/loading until Privy is ready
   if (!ready || loggingIn) {
-    console.log("Am ready", ready, "LogginIN", loggingIn)
     return (
       <View style={{ flex: 1, backgroundColor: colors.background.DEFAULT }}>
         <LoadingScreen />
@@ -125,10 +126,12 @@ export default function Index() {
   return (
     <View style={{ flex: 1, backgroundColor: colors.background.DEFAULT }}>
       {/* {user && !isAuthenticated && <PasskeyAuth />} */}
+      <PushNotificationManager />
+
       {user && !isAuthenticated ?
         <PasskeyAuth setIsAuthenticated={setIsAuthenticated} />
         :
-        <Stack
+        < Stack
           screenOptions={{
             headerStyle: { backgroundColor: colors.primary.DEFAULT },
             headerTintColor: colors.white,
@@ -140,6 +143,6 @@ export default function Index() {
           <Stack.Screen name='notabs' options={{ headerShown: false }} />
         </Stack>
       }
-    </View>
+    </View >
   );
 }
