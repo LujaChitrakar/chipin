@@ -28,9 +28,11 @@ import LendBorrowButton from '@/components/friends/LendBorrowButtons';
 import Button from '@/components/common/Button';
 import FriendRequestCard from '@/components/friends/FriendRequestCard';
 import FriendCard from '@/components/friends/FriendCard';
-
+import { useNotification } from '@/context/NotificationContext';
 const FriendsPage = () => {
   const queryClient = useQueryClient();
+  const { expoPushToken, notification, error } = useNotification()
+
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddFriendModal, setShowAddFriendModal] = useState(false);
   const [friendEmail, setFriendEmail] = useState('');
@@ -60,6 +62,11 @@ const FriendsPage = () => {
     page: requestsPage,
     limit: 10,
   });
+
+  useEffect(() => {
+    console.log("Friends ", expoPushToken, notification, error)
+  }, [expoPushToken, notification, error])
+
 
   const { mutate: sendFriendRequest, isPending: sendingFriendRequest } =
     useSendFriendRequest();
@@ -150,7 +157,7 @@ const FriendsPage = () => {
         ToastAndroid.showWithGravity(
           'Friend request sent',
           ToastAndroid.SHORT,
-          ToastAndroid.BOTTOM+20
+          ToastAndroid.BOTTOM + 20
         );
         setShowAddFriendModal(false);
         setFriendEmail('');
@@ -160,7 +167,7 @@ const FriendsPage = () => {
         ToastAndroid.showWithGravity(
           error?.response?.data?.message || 'Failed to send request',
           ToastAndroid.LONG,
-          ToastAndroid.BOTTOM+20
+          ToastAndroid.BOTTOM + 20
         );
       },
     });
@@ -389,7 +396,7 @@ const FriendsPage = () => {
                 ToastAndroid.showWithGravity(
                   'No valid email found in QR code',
                   ToastAndroid.LONG,
-                  ToastAndroid.BOTTOM+20
+                  ToastAndroid.BOTTOM + 20
                 );
                 setShowScanner(false);
                 setShowAddFriendModal(false);

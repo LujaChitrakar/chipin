@@ -46,5 +46,3 @@ expo-env.d.ts
 package-lock.json
 pnpm-lock.yaml
 yarn.lock
-
-google-services.json

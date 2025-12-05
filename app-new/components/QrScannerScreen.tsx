@@ -57,7 +57,6 @@ const QRScannerScreen = ({
       showFrame={showFrame || true}
       laserColor={laserColor || 'red'}
       frameColor='white'
-      zoomMode='off'
     />
   );
 };
