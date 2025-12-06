@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "754764439232",
+    "project_id": "chipin-notification",
+    "storage_bucket": "chipin-notification.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:754764439232:android:141f80e386ca4fa1099725",
+        "android_client_info": {
+          "package_name": "com.chipin.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAhSuD9iWJZmNIc0eYEvl60zJk0OodGLCQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
