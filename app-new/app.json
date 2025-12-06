@@ -23,15 +23,19 @@
       "infoPlist": {
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true
-        }
+        },
+        "NSCameraUsageDescription": "This app needs camera access to scan QR codes."
       }
     },
     "android": {
+      "permissions": [
+        "CAMERA",
+        "android.permission.CAMERA"
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#0E0E0E"
       },
-      
       "intentFilters": [
         {
           "action": "VIEW",
@@ -77,7 +81,8 @@
           "certificateHash": "5C:9D:8D:1C:6A:0B:08:36:FB:D1:9A:C1:19:21:6F:97:E6:54:B7:1C:23:D9:68:47:20:41:8E:5A:2F:36:FF:D3"
         }
       },
-      "package": "com.chipin.app"
+      "package": "com.chipin.app",
+      "googleServicesFile":"./google-services.json"
     },
     "extra": {
       "privyAppId": "cmgf4iucb018ll80dsbkmcspc",
@@ -85,13 +90,14 @@
       "passkeyAssociatedDomain": "https://chipinapp.xyz",
       "router": {},
       "eas": {
-        "projectId": "2fde7765-4859-4134-b551-f0a84f422006"
+        "projectId": "ffc6e1af-7156-4663-816a-77b40ec1c29c"
       }
     },
     "plugins": [
       "expo-router",
       "expo-secure-store",
       "expo-apple-authentication",
+      "react-native-vision-camera",
       [
         "expo-build-properties",
         {
@@ -108,6 +114,7 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "owner": "chipin"
   }
 }

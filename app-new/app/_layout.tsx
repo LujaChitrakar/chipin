@@ -10,12 +10,24 @@ import { useFonts } from "expo-font";
 import { useColorScheme } from "react-native";
 import { Slot } from "expo-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import * as Notifications from "expo-notifications";
+import { NotificationProvider } from "@/context/NotificationContext";
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+  }),
+});
+
+
 
 export default function RootLayout() {
   useFonts({
-   Outfit_400Regular,
-   Outfit_500Medium,
-   Outfit_600SemiBold,
+    Outfit_400Regular,
+    Outfit_500Medium,
+    Outfit_600SemiBold,
   });
   const colorScheme = useColorScheme() ?? "dark";
   return (
@@ -30,10 +42,12 @@ export default function RootLayout() {
         },
       }}
     >
-      <QueryClientProvider client={new QueryClient()}>
-        <Slot />
-      </QueryClientProvider>
-      <PrivyElements config={{ appearance: { colorScheme } }} />
+      <NotificationProvider>
+        <QueryClientProvider client={new QueryClient()}>
+          <Slot />
+        </QueryClientProvider>
+        <PrivyElements config={{ appearance: { colorScheme } }} />
+      </NotificationProvider>
     </PrivyProvider>
   );
 }
