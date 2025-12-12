@@ -5,7 +5,7 @@ export const useSendFriendRequest = () => {
   return useMutation({
     mutationFn: async (userEmail: string) => {
       const response = await axiosInstance.post('/friend/request', {
-        userEmail,
+        userEmail
       });
       return response?.data;
     },

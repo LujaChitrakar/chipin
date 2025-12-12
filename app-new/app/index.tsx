@@ -5,12 +5,14 @@ import { usePrivy } from '@privy-io/expo';
 import { useRouter, Stack } from 'expo-router';
 import colors from '@/assets/colors';
 import LoadingScreen from '@/components/splash/LoadingScreen';
-import { useLoginWithPrivy } from '@/services/api/authApi';
+import { useGetMyProfile, useLoginWithPrivy } from '@/services/api/authApi';
 import { extractPrivyIdAndEmailFromPrivyUser } from '@/utils/privyUtils';
 import * as LocalAuthentication from 'expo-local-authentication'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import PasskeyAuth from '@/components/common/PassKeyAuth';
 import { axiosInstance } from '@/services/api/apiConstants';
+import { useNotification } from '@/context/NotificationContext';
+import { useCheckEmail } from '@/services/api/userApi';
 
 export default function Index() {
   const router = useRouter();
@@ -21,18 +23,22 @@ export default function Index() {
     error: loginError,
   } = useLoginWithPrivy();
 
+  const { expoPushToken } = useNotification()
+  const {
+    data: userProfile,
+  } = useGetMyProfile();
 
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
 
 
   // ✅ Navigate only after Privy is ready
   useEffect(() => {
-    // console.log("Current User", user)
+    console.log("Current User", userProfile)
     if (!ready) return;
 
     if (user) {
-      // @ts-ignore
-      loginToApiWithPrivy(extractPrivyIdAndEmailFromPrivyUser(user), {
+
+      loginToApiWithPrivy({ ...extractPrivyIdAndEmailFromPrivyUser(user), expoPushToken }, {
         onSuccess: (response) => {
           // console.log('LOGIN SUCCESS::', response);
 
@@ -126,7 +132,7 @@ export default function Index() {
     <View style={{ flex: 1, backgroundColor: colors.background.DEFAULT }}>
       {/* {user && !isAuthenticated && <PasskeyAuth />} */}
       {user && !isAuthenticated ?
-        <PasskeyAuth setIsAuthenticated={setIsAuthenticated} />
+        <PasskeyAuth isRegisterPin={!userProfile?.data?.userPIN} setIsAuthenticated={setIsAuthenticated} />
         :
         <Stack
           screenOptions={{
