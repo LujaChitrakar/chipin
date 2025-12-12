@@ -28,10 +28,8 @@ import LendBorrowButton from '@/components/friends/LendBorrowButtons';
 import Button from '@/components/common/Button';
 import FriendRequestCard from '@/components/friends/FriendRequestCard';
 import FriendCard from '@/components/friends/FriendCard';
-import { useNotification } from '@/context/NotificationContext';
 const FriendsPage = () => {
   const queryClient = useQueryClient();
-  const { expoPushToken, notification, error } = useNotification()
 
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddFriendModal, setShowAddFriendModal] = useState(false);
@@ -63,9 +61,6 @@ const FriendsPage = () => {
     limit: 10,
   });
 
-  useEffect(() => {
-    console.log("Friends ", expoPushToken, notification, error)
-  }, [expoPushToken, notification, error])
 
 
   const { mutate: sendFriendRequest, isPending: sendingFriendRequest } =
@@ -150,7 +145,6 @@ const FriendsPage = () => {
     setFriendsPage(1);
     setRequestsPage(1);
   };
-
   const handleSendFriendRequest = (email: string) => {
     sendFriendRequest(email, {
       onSuccess: () => {

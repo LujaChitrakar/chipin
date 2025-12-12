@@ -19,9 +19,9 @@ const Login = () => {
     login({ loginMethods: ['email'] })
       .then((session) => {
         console.log('User logged in', session.user);
-        router.navigate('/');
+        router.replace('/');
       })
-      .catch((err) => {});
+      .catch((err) => { })
   };
 
   return (

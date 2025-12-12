@@ -1,13 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Animated, Image } from 'react-native';
 import * as LocalAuthentication from 'expo-local-authentication';
+import { useGetMyProfile, useUpdatePin, useVerifyPin } from '@/services/api/authApi';
 
 interface PassKeyAuthProps {
+    isRegisterPin: boolean,
     setIsAuthenticated: React.Dispatch<React.SetStateAction<boolean>>,
-
     handleTransaction?: (isTransactionAuthenticated: boolean) => void,
 }
-const PasskeyAuth = ({ setIsAuthenticated, handleTransaction }: PassKeyAuthProps) => {
+const PasskeyAuth = ({ isRegisterPin = false, setIsAuthenticated, handleTransaction }: PassKeyAuthProps) => {
 
     const [pin, setPin] = useState('');
     const [error, setError] = useState('');
@@ -17,6 +18,10 @@ const PasskeyAuth = ({ setIsAuthenticated, handleTransaction }: PassKeyAuthProps
 
     const [scaleAnim] = useState(new Animated.Value(1));
 
+    const { mutateAsync: updateMyPin, isPending: pendingUpdatePin } = useUpdatePin()
+    const { mutateAsync: verifyMyPin, isPending: pendingVerifyPin } = useVerifyPin()
+
+    const { data: userProfile, isLoading: myProfileLoading } = useGetMyProfile();
     // Create animated values for each pin dot
     const dotAnimations = useRef([...Array(6)].map(() => ({
         scale: new Animated.Value(0.8),
@@ -27,10 +32,11 @@ const PasskeyAuth = ({ setIsAuthenticated, handleTransaction }: PassKeyAuthProps
 
     // Animate dot when pin changes
     useEffect(() => {
+
+
         if (pin.length > 0) {
             const index = pin.length - 1;
 
-            // Animate the newly filled dot
             Animated.parallel([
                 Animated.spring(dotAnimations[index].scale, {
                     toValue: 1,
@@ -76,26 +82,25 @@ const PasskeyAuth = ({ setIsAuthenticated, handleTransaction }: PassKeyAuthProps
             setError('');
 
             // Auto-verify when 6 digits entered
-            if (newPin.length === maxPinLength) {
-                verifyPin(newPin);
-            }
+            // if (newPin.length === maxPinLength) {
+            //     submitPin(newPin);
+            // }
         }
     };
 
-    const verifyPin = (pinToVerify: string) => {
-        // Replace with your actual PIN verification logic
-        setTimeout(() => {
-            if (pinToVerify === '123456') {
-                resetPin()
-                handleTransaction ? handleTransaction(true) : setIsAuthenticated(true)
+    const submitPin = async (pinToVerify: string) => {
+        let isPinAuthenticated = (isRegisterPin) ? await updateMyPin({ email: userProfile?.data?.email, userPin: pin }) : await verifyMyPin({ email: userProfile?.data?.email, userPin: pin })
 
-            } else {
-                setError('Incorrect PIN');
-                // Shake animation for error
-                shakeAnimation();
-                setTimeout(() => resetPin(), 500);
-            }
-        }, 300);
+        console.log("verify pin", isPinAuthenticated)
+        if (isPinAuthenticated) {
+            resetPin()
+            handleTransaction ? handleTransaction(true) : setIsAuthenticated(true)
+
+        } else {
+            setError('Incorrect PIN')
+            setTimeout(() => resetPin(), 500);
+        }
+
     };
 
     const resetPin = () => {
@@ -120,15 +125,7 @@ const PasskeyAuth = ({ setIsAuthenticated, handleTransaction }: PassKeyAuthProps
         });
     };
 
-    const shakeAnimation = () => {
-        const shakeAnim = new Animated.Value(0);
-        Animated.sequence([
-            Animated.timing(shakeAnim, { toValue: 10, duration: 50, useNativeDriver: true }),
-            Animated.timing(shakeAnim, { toValue: -10, duration: 50, useNativeDriver: true }),
-            Animated.timing(shakeAnim, { toValue: 10, duration: 50, useNativeDriver: true }),
-            Animated.timing(shakeAnim, { toValue: 0, duration: 50, useNativeDriver: true }),
-        ]).start();
-    };
+
 
     const handleDelete = () => {
         if (pin.length > 0) {
@@ -264,7 +261,7 @@ const PasskeyAuth = ({ setIsAuthenticated, handleTransaction }: PassKeyAuthProps
                 ))}
 
                 <View style={styles.numberRow}>
-                    <TouchableOpacity
+                    {isRegisterPin || <TouchableOpacity
                         style={styles.numberButton}
                         onPress={handleFingerprintPress}
                         activeOpacity={0.7}
@@ -273,10 +270,8 @@ const PasskeyAuth = ({ setIsAuthenticated, handleTransaction }: PassKeyAuthProps
                             <Image style={{
                                 width: 72, height: 72,
                             }} source={require("@/assets/images/fingerprint-icon.webp")} />
-
-                            {/* <Text style={styles.fingerprintIcon}>👆</Text> */}
                         </Animated.View>
-                    </TouchableOpacity>
+                    </TouchableOpacity>}
 
                     <TouchableOpacity
                         style={styles.numberButton}
@@ -311,8 +306,8 @@ const PasskeyAuth = ({ setIsAuthenticated, handleTransaction }: PassKeyAuthProps
     return (
         <View style={styles.container}>
             <View style={styles.header}>
-                <Text style={styles.title}>Enter Passkey</Text>
-                <Text style={styles.subtitle}>Enter your 6-digit PIN or use fingerprint</Text>
+                <Text style={styles.title}>{isRegisterPin ? "Register new" : "Enter"} Passkey</Text>
+                {isRegisterPin || <Text style={styles.subtitle}>Enter your 6-digit PIN or use fingerprint</Text>}
             </View>
 
             {renderPinDots()}
@@ -324,16 +319,15 @@ const PasskeyAuth = ({ setIsAuthenticated, handleTransaction }: PassKeyAuthProps
             )}
 
             {renderNumberPad()}
-
-            {/* <TouchableOpacity
+            <TouchableOpacity
                 style={styles.cancelButton}
                 onPress={() => {
-                    resetPin();
+                    submitPin(pin)
                     setError('');
                 }}
             >
-                <Text style={styles.cancelText}>Cancel</Text>
-            </TouchableOpacity> */}
+                <Text style={styles.cancelText}>{isRegisterPin ? "Register" : "Submit"}</Text>
+            </TouchableOpacity>
         </View>
     );
 };

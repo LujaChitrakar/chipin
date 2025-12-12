@@ -5,22 +5,30 @@ import { setItem } from 'expo-secure-store';
 export const useLoginWithPrivy = () =>
   useMutation({
     mutationKey: ['loginWithPrivy'],
-    mutationFn: async ({
-      privyId,
-      email,
-      wallet_public_key,
-    }: {
-      privyId: string;
-      email: string;
-      wallet_public_key: string;
-    }) => {
+    mutationFn: async (
+      {
+        privyId,
+        email,
+        wallet_public_key,
+        expoPushToken
+      }
+        :
+        {
+          privyId: string;
+          email: string;
+          wallet_public_key: string;
+          expoPushToken: string | null;
+        }) => {
       const response = await axiosInstance.post(
         '/auth/signupOrLoginWithPrivy',
         {
           privyId,
           email,
           wallet_public_key,
-        }
+          notificationToken: expoPushToken
+
+
+        },
       );
       if (response?.data?.success) {
         setItem('token', response?.data?.data?.token);
@@ -48,3 +56,34 @@ export const useUpdateProfile = () => {
     },
   })
 }
+
+
+
+export const useUpdatePin = () => {
+  return useMutation({
+    mutationKey: ["updatePin"],
+    mutationFn: async (updateData: any) => {
+      console.log("auth api", updateData)
+      const response = await axiosInstance.patch('/auth/pin', updateData);
+      return response.data;
+    },
+  })
+}
+
+
+export const useVerifyPin = () => {
+  return useMutation({
+    mutationKey: ["verifyPin"],
+    mutationFn: async (verifyData: any) => {
+      try {
+
+        const response = await axiosInstance.post('/auth/pin', verifyData);
+        return response.data.success;
+      } catch (err) {
+        console.log("Verify pin ", err)
+        return false;
+      }
+    },
+  })
+}
+
