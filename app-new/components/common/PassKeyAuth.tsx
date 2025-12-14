@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Animated, Image } from 'react-native';
 import * as LocalAuthentication from 'expo-local-authentication';
-import { useGetMyProfile, useUpdatePin, useVerifyPin } from '@/services/api/authApi';
+import { useGetMyProfile, useRegisterPin, useVerifyPin } from '@/services/api/authApi';
 
 interface PassKeyAuthProps {
     isRegisterPin: boolean,
@@ -18,7 +18,7 @@ const PasskeyAuth = ({ isRegisterPin = false, setIsAuthenticated, handleTransact
 
     const [scaleAnim] = useState(new Animated.Value(1));
 
-    const { mutateAsync: updateMyPin, isPending: pendingUpdatePin } = useUpdatePin()
+    const { mutateAsync: registerMyPin, isPending: pendingUpdatePin } = useRegisterPin()
     const { mutateAsync: verifyMyPin, isPending: pendingVerifyPin } = useVerifyPin()
 
     const { data: userProfile, isLoading: myProfileLoading } = useGetMyProfile();
@@ -89,7 +89,7 @@ const PasskeyAuth = ({ isRegisterPin = false, setIsAuthenticated, handleTransact
     };
 
     const submitPin = async (pinToVerify: string) => {
-        let isPinAuthenticated = (isRegisterPin) ? await updateMyPin({ email: userProfile?.data?.email, userPin: pin }) : await verifyMyPin({ email: userProfile?.data?.email, userPin: pin })
+        let isPinAuthenticated = (isRegisterPin) ? await registerMyPin({ email: userProfile?.data?.email, userPin: pin }) : await verifyMyPin({ email: userProfile?.data?.email, userPin: pin })
 
         console.log("verify pin", isPinAuthenticated)
         if (isPinAuthenticated) {
@@ -261,7 +261,7 @@ const PasskeyAuth = ({ isRegisterPin = false, setIsAuthenticated, handleTransact
                 ))}
 
                 <View style={styles.numberRow}>
-                    {isRegisterPin || <TouchableOpacity
+                    {!isRegisterPin ? <TouchableOpacity
                         style={styles.numberButton}
                         onPress={handleFingerprintPress}
                         activeOpacity={0.7}
@@ -271,7 +271,7 @@ const PasskeyAuth = ({ isRegisterPin = false, setIsAuthenticated, handleTransact
                                 width: 72, height: 72,
                             }} source={require("@/assets/images/fingerprint-icon.webp")} />
                         </Animated.View>
-                    </TouchableOpacity>}
+                    </TouchableOpacity> : <Text style={{ width: 72, height: 72 }}></Text>}
 
                     <TouchableOpacity
                         style={styles.numberButton}

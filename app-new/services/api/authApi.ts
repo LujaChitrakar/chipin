@@ -59,13 +59,19 @@ export const useUpdateProfile = () => {
 
 
 
-export const useUpdatePin = () => {
+export const useRegisterPin = () => {
   return useMutation({
-    mutationKey: ["updatePin"],
-    mutationFn: async (updateData: any) => {
-      console.log("auth api", updateData)
-      const response = await axiosInstance.patch('/auth/pin', updateData);
-      return response.data;
+    mutationKey: ["registerPin"],
+    mutationFn: async (registerPinData: any) => {
+      try {
+
+        console.log("auth api", registerPinData)
+        const response = await axiosInstance.post('/auth/register/pin', registerPinData);
+        return response.data;
+      } catch (err) {
+        console.log("The err while updating pin", err)
+        return false
+      }
     },
   })
 }
@@ -77,7 +83,7 @@ export const useVerifyPin = () => {
     mutationFn: async (verifyData: any) => {
       try {
 
-        const response = await axiosInstance.post('/auth/pin', verifyData);
+        const response = await axiosInstance.post('/auth/verify/pin', verifyData);
         return response.data.success;
       } catch (err) {
         console.log("Verify pin ", err)
