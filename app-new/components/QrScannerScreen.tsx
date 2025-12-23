@@ -133,7 +133,7 @@ const QRScannerScreen = ({ onScan, styles }: QRScannerScreenProps) => {
   if (hasPermission === false) {
     return (
       <View style={localStyles.centered}>
-        <Text>Camera access denied.</Text>
+        <Text style={{ color: 'white' }}>Camera access denied !</Text>
         <Text style={localStyles.link} onPress={() => Linking.openSettings()}>
           Open Settings
         </Text>
@@ -170,6 +170,7 @@ const localStyles = StyleSheet.create({
     flex: 1,
     minHeight: 300,
     minWidth: 600,
+
   },
   centered: {
     flex: 1,
@@ -180,6 +181,7 @@ const localStyles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     justifyContent: 'center',
     alignItems: 'center',
+
     // You can add a border or an image here to simulate a frame
   },
   scanText: {
@@ -189,9 +191,10 @@ const localStyles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.5)',
     padding: 10,
     borderRadius: 5,
+
   },
   link: {
-    color: 'blue',
+    color: 'white',
     marginTop: 10,
     textDecorationLine: 'underline',
   }

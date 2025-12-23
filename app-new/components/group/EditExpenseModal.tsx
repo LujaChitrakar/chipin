@@ -58,6 +58,7 @@ const EditExpenseModal: React.FC<EditExpenseModalProps> = ({
   const canEdit = canEditExpense({ _id: editingExpenseId, paid_by });
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
+
   const onDeletePress = () => setShowDeleteConfirm(true);
   const onCancelDelete = () => setShowDeleteConfirm(false);
   const onConfirmDelete = () => {
@@ -134,11 +135,20 @@ const EditExpenseModal: React.FC<EditExpenseModalProps> = ({
                     <View style={styles.splitHeader}>
                       <Text style={styles.inputLabel}>Split Between</Text>
                       <TouchableOpacity
-                        onPress={() =>
-                          setSplitBetween(members.map((m) => m._id))
+                        onPress={() => {
+
+                          if (members.length === split_between.length) {
+                            setSplitBetween([paid_by])
+                          }
+                          else {
+
+                            setSplitBetween(members.map((m) => m._id))
+                          }
+
+                        }
                         }
                       >
-                        <Text style={styles.selectAllText}>Select all</Text>
+                        <Text style={styles.selectAllText}>{split_between.length !== members.length ? "Select" : "Deselect"} all</Text>
                       </TouchableOpacity>
                     </View>
 
@@ -151,8 +161,8 @@ const EditExpenseModal: React.FC<EditExpenseModalProps> = ({
                             setSplitBetween(
                               split_between.includes(member._id)
                                 ? split_between.filter(
-                                    (id) => id !== member._id
-                                  )
+                                  (id) => id !== member._id
+                                )
                                 : [...split_between, member._id]
                             );
                           }
@@ -427,7 +437,7 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   deleteButton: {
-    backgroundColor: colors.red[600],
+    backgroundColor: colors.red[900],
     borderRadius: 16,
     paddingHorizontal: 16,
     justifyContent: 'center',

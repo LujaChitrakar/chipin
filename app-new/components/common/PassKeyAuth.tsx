@@ -2,9 +2,11 @@ import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Animated, Image } from 'react-native';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { useGetMyProfile, useRegisterPin, useVerifyPin } from '@/services/api/authApi';
+import { Fingerprint } from 'lucide-react-native';
+import colors from '@/assets/colors';
 
 interface PassKeyAuthProps {
-    isRegisterPin: boolean,
+    isRegisterPin?: boolean,
     setIsAuthenticated: React.Dispatch<React.SetStateAction<boolean>>,
     handleTransaction?: (isTransactionAuthenticated: boolean) => void,
 }
@@ -28,7 +30,7 @@ const PasskeyAuth = ({ isRegisterPin = false, setIsAuthenticated, handleTransact
         opacity: new Animated.Value(0),
     }))).current;
 
-    const maxPinLength = 6;
+    const maxPinLength = 4;
 
     // Animate dot when pin changes
     useEffect(() => {
@@ -262,14 +264,12 @@ const PasskeyAuth = ({ isRegisterPin = false, setIsAuthenticated, handleTransact
 
                 <View style={styles.numberRow}>
                     {!isRegisterPin ? <TouchableOpacity
-                        style={styles.numberButton}
+                        style={styles.fingerPrintButton}
                         onPress={handleFingerprintPress}
                         activeOpacity={0.7}
                     >
                         <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
-                            <Image style={{
-                                width: 72, height: 72,
-                            }} source={require("@/assets/images/fingerprint-icon.webp")} />
+                            <Fingerprint color={'white'} />
                         </Animated.View>
                     </TouchableOpacity> : <Text style={{ width: 72, height: 72 }}></Text>}
 
@@ -408,11 +408,17 @@ const styles = StyleSheet.create({
         width: 72,
         height: 72,
         borderRadius: 36,
-        backgroundColor: '#1C1C1E',
+        backgroundColor: colors.cardBackground.light,
         justifyContent: 'center',
         alignItems: 'center',
         borderWidth: 1,
         borderColor: '#3A3A3C',
+    },
+    fingerPrintButton: {
+        width: 72,
+        height: 72,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     numberText: {
         fontSize: 28,
@@ -426,7 +432,6 @@ const styles = StyleSheet.create({
         borderRadius: 36,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#1d314a',
     },
     numberButtonPressed: {
         backgroundColor: '#4071ad',

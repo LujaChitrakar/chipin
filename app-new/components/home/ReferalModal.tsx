@@ -32,7 +32,7 @@ const ReferalModal = ({
         ToastAndroid.showWithGravity(
           '50 points earned from referal.',
           ToastAndroid.LONG,
-          ToastAndroid.BOTTOM+20
+          ToastAndroid.TOP + 20
         );
         setVisible(false);
       },
@@ -40,7 +40,7 @@ const ReferalModal = ({
         ToastAndroid.showWithGravity(
           'Error applying code',
           ToastAndroid.LONG,
-          ToastAndroid.BOTTOM+20
+          ToastAndroid.TOP + 20
         );
         setVisible(false);
       },

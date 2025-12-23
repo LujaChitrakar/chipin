@@ -3,6 +3,7 @@ import {
   useAcceptFriendRequest,
   useRejectFriendRequest,
 } from '@/services/api/friendsApi';
+import { truncateEmail } from '@/utils/emailFormat';
 import { useQueryClient } from '@tanstack/react-query';
 import { Check, X } from 'lucide-react-native';
 import {
@@ -36,7 +37,7 @@ const FriendRequestCard = ({
       onSuccess: () => {
         ToastAndroid.showWithGravity(
           'Friend request accepted',
-          ToastAndroid.BOTTOM+20,
+          ToastAndroid.TOP + 20,
           ToastAndroid.SHORT
         );
         setAllRequests((prev: any) =>
@@ -49,7 +50,7 @@ const FriendRequestCard = ({
       onError: () => {
         ToastAndroid.showWithGravity(
           'Failed to accept request',
-          ToastAndroid.BOTTOM+20,
+          ToastAndroid.TOP + 20,
           ToastAndroid.SHORT
         );
       },
@@ -61,7 +62,7 @@ const FriendRequestCard = ({
       onSuccess: () => {
         ToastAndroid.showWithGravity(
           'Friend request rejected',
-          ToastAndroid.BOTTOM+20,
+          ToastAndroid.TOP + 20,
           ToastAndroid.SHORT
         );
         setAllRequests((prev: any) =>
@@ -71,7 +72,7 @@ const FriendRequestCard = ({
       onError: () => {
         ToastAndroid.showWithGravity(
           'Failed to reject request',
-          ToastAndroid.BOTTOM+20,
+          ToastAndroid.TOP + 20,
           ToastAndroid.SHORT
         );
       },
@@ -94,7 +95,7 @@ const FriendRequestCard = ({
         <Text style={styles.friendName}>
           {requester?.fullname || requester?.username || 'Unknown User'}
         </Text>
-        <Text style={styles.friendEmail}>{requester?.email || 'No email'}</Text>
+        <Text style={styles.friendEmail}>{truncateEmail(requester?.email) || 'No email'}</Text>
       </View>
 
       {/* Action Buttons */}

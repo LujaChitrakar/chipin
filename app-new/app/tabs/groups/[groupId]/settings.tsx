@@ -20,6 +20,7 @@ import { AntDesign, Ionicons } from '@expo/vector-icons';
 import ScreenContainer from '@/components/ScreenContainer';
 import ScreenHeader from '@/components/navigation/ScreenHeader';
 import { useGetMyProfile } from "@/services/api/authApi";
+import { truncateEmail } from '@/utils/emailFormat';
 
 const GroupSettings = () => {
   const router = useRouter();
@@ -143,8 +144,11 @@ const GroupSettings = () => {
       },
       {
         onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: ['group', groupId] });
-          ToastAndroid.showWithGravity('Group settings updated successfully', ToastAndroid.LONG, ToastAndroid.BOTTOM+10);
+          queryClient.invalidateQueries({ queryKey: ['my-groups'] });
+          queryClient.invalidateQueries({ queryKey: [groupId, 'groupById'] });
+          router.back()
+          router.back()
+          ToastAndroid.showWithGravity('Group settings updated successfully', ToastAndroid.LONG, ToastAndroid.TOP + 5);
         },
         onError: (error: any) => {
           console.log('ERROR UPDATING GROUP:', error?.response?.data);
@@ -226,7 +230,7 @@ const GroupSettings = () => {
             {member.fullname || member.username || member.email}
           </Text>
           <Text style={{ color: colors.grayTextColor.DEFAULT, fontSize: 13 }}>
-            {member.email}
+            {truncateEmail(member.email)}
           </Text>
         </View>
 
@@ -386,7 +390,7 @@ const GroupSettings = () => {
                       fontStyle: 'italic',
                     }}
                   >
-                    {email}
+                    {truncateEmail(email)}
                   </Text>
                   <Text
                     style={{

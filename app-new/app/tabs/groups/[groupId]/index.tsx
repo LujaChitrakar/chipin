@@ -156,7 +156,6 @@ const GroupDetailPage = () => {
               style={{
                 color: colors.white,
                 fontSize: 16,
-                textDecorationLine: 'underline',
                 marginLeft: 8,
               }}
             >

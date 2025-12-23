@@ -87,7 +87,7 @@ const SendMoneyModal = ({
           ToastAndroid.showWithGravity(
             'Wallet not initialized. Please wait few seconds',
             ToastAndroid.LONG,
-            ToastAndroid.BOTTOM + 20
+            ToastAndroid.TOP + 20
           );
           return;
         }
@@ -96,7 +96,7 @@ const SendMoneyModal = ({
           ToastAndroid.showWithGravity(
             'Please select the friend to send money',
             ToastAndroid.LONG,
-            ToastAndroid.BOTTOM + 20
+            ToastAndroid.TOP + 20
           );
           return;
         }
@@ -106,7 +106,7 @@ const SendMoneyModal = ({
           ToastAndroid.showWithGravity(
             'Please enter the public key',
             ToastAndroid.LONG,
-            ToastAndroid.BOTTOM + 20
+            ToastAndroid.TOP + 20
           );
           return;
         }
@@ -149,7 +149,7 @@ const SendMoneyModal = ({
                   selectedFriend?.email
                 }`,
                 ToastAndroid.LONG,
-                ToastAndroid.BOTTOM + 30
+                ToastAndroid.TOP + 30
               );
               console.log("line 4 success")
 
@@ -165,7 +165,7 @@ const SendMoneyModal = ({
               ToastAndroid.showWithGravity(
                 'Transaction failed: ' + (err.message || 'Unknown error'),
                 ToastAndroid.LONG,
-                ToastAndroid.BOTTOM + 30);
+                ToastAndroid.TOP + 30);
 
               console.log("line 5 error", err)
             }
@@ -202,7 +202,7 @@ const SendMoneyModal = ({
     //   ToastAndroid.showWithGravity(
     //     'Wallet not initialized. Please wait few seconds',
     //     ToastAndroid.LONG,
-    //     ToastAndroid.BOTTOM + 20
+    //     ToastAndroid.TOP + 20
     //   );
     //   return;
     // }
@@ -211,7 +211,7 @@ const SendMoneyModal = ({
     //   ToastAndroid.showWithGravity(
     //     'Please select the friend to send money',
     //     ToastAndroid.LONG,
-    //     ToastAndroid.BOTTOM + 20
+    //     ToastAndroid.TOP + 20
     //   );
     //   return;
     // }
@@ -219,7 +219,7 @@ const SendMoneyModal = ({
     //   ToastAndroid.showWithGravity(
     //     'Please enter the public key',
     //     ToastAndroid.LONG,
-    //     ToastAndroid.BOTTOM + 20
+    //     ToastAndroid.TOP + 20
     //   );
     //   return;
     // }
@@ -260,7 +260,7 @@ const SendMoneyModal = ({
     //           selectedFriend?.email
     //         }`,
     //         ToastAndroid.LONG,
-    //         ToastAndroid.BOTTOM + 30
+    //         ToastAndroid.TOP + 30
     //       );
 
     //       handleRescan();
@@ -631,6 +631,7 @@ const SendMoneyModal = ({
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                   <TouchableOpacity
                     style={{
+                      width: 120,
                       padding: 10,
                       borderRadius: 8,
                       backgroundColor: colors.cardBackground.light,
@@ -666,6 +667,7 @@ const SendMoneyModal = ({
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={{
+                      width: 120,
                       padding: 10,
                       borderRadius: 8,
                       backgroundColor: colors.cardBackground.light,
@@ -719,6 +721,7 @@ const SendMoneyModal = ({
                     >
                       Select Friend
                     </Text>
+
                     <TouchableOpacity
                       onPress={() => setVisibleDropdown(true)}
                       style={{
@@ -781,6 +784,15 @@ const SendMoneyModal = ({
                     gap: 16,
                   }}
                 >
+                  <Text
+                    style={{
+                      color: colors.grayTextColor.dark,
+                      marginBottom: 4,
+                    }}
+                  >
+                    Via Public Key
+                  </Text>
+
                   <View
                     style={{
                       display: 'flex',
@@ -795,7 +807,7 @@ const SendMoneyModal = ({
                       style={{
                         backgroundColor: colors.cardBackground.DEFAULT,
                         borderRadius: 8,
-                        padding: 10,
+                        padding: 6,
                         color: colors.white,
                         width: '90%',
                       }}
@@ -830,6 +842,20 @@ const SendMoneyModal = ({
             <TouchableOpacity
               style={{
                 flex: 1,
+                backgroundColor: colors.cardBackground.light,
+                paddingVertical: 12,
+                borderRadius: 50,
+                alignItems: 'center',
+              }}
+              onPress={() => setVisible(false)}
+            >
+              <Text style={{ color: colors.white, fontWeight: '600' }}>
+                Cancel
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={{
+                flex: 1,
                 backgroundColor: !amount ? colors.white + '99' : colors.white,
                 paddingVertical: 12,
                 borderRadius: 50,
@@ -846,20 +872,7 @@ const SendMoneyModal = ({
                 </Text>
               )}
             </TouchableOpacity>
-            <TouchableOpacity
-              style={{
-                flex: 1,
-                backgroundColor: colors.cardBackground.light,
-                paddingVertical: 12,
-                borderRadius: 50,
-                alignItems: 'center',
-              }}
-              onPress={() => setVisible(false)}
-            >
-              <Text style={{ color: colors.white, fontWeight: '600' }}>
-                Cancel
-              </Text>
-            </TouchableOpacity>
+
           </View>
         </View>
       </View>

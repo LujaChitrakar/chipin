@@ -40,7 +40,7 @@ const JoinCreateButton = () => {
     if (!createSolanaWallet) {
       ToastAndroid.showWithGravity(
         'Solana wallet creation is not available.',
-        ToastAndroid.BOTTOM+20,
+        ToastAndroid.TOP + 20,
         ToastAndroid.LONG
       );
       return;
@@ -62,7 +62,7 @@ const JoinCreateButton = () => {
     if (!newWallet) {
       ToastAndroid.showWithGravity(
         'Failed to create Solana wallet.',
-        ToastAndroid.BOTTOM+20,
+        ToastAndroid.TOP + 20,
         ToastAndroid.LONG
       );
       return;
@@ -87,7 +87,7 @@ const JoinCreateButton = () => {
         console.log('Error creating saving group:', error?.response?.data);
         ToastAndroid.showWithGravity(
           error?.response?.data?.message || 'Failed to create savings',
-          ToastAndroid.BOTTOM+20,
+          ToastAndroid.TOP + 20,
           ToastAndroid.LONG
         );
       },

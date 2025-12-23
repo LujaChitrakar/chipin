@@ -1,4 +1,5 @@
 import colors from '@/assets/colors';
+import { truncateEmail } from '@/utils/emailFormat';
 import { router } from 'expo-router';
 import { MoveUpRight } from 'lucide-react-native';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -7,7 +8,6 @@ const FriendCard = ({ friend }: { friend: any }) => {
   const toBePaid = friend.toBePaid;
   const toBeReceived = friend.toBeReceived;
   let amount = toBeReceived - toBePaid;
-
   return (
     <TouchableOpacity
       style={styles.friendCard}
@@ -72,7 +72,7 @@ const FriendCard = ({ friend }: { friend: any }) => {
           </Text>
           <MoveUpRight color={colors.white} size={16} />
         </View>
-        <Text style={styles.friendEmail}>{friend?.email || 'No email'}</Text>
+        <Text style={styles.friendEmail}>{truncateEmail(friend?.email) || 'No email'}</Text>
       </View>
 
       {/* Balance */}
@@ -90,8 +90,8 @@ const FriendCard = ({ friend }: { friend: any }) => {
               amount > 0
                 ? colors.green[500] + '99'
                 : amount < 0
-                ? colors.red[500] + '99'
-                : colors.green[500],
+                  ? colors.red[500] + '99'
+                  : colors.green[500],
             textAlign: 'right',
           }}
         >

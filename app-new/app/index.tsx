@@ -130,7 +130,7 @@ export default function Index() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background.DEFAULT }}>
-      {/* {user && !isAuthenticated && <PasskeyAuth />} */}
+
       {user && !isAuthenticated ?
         <PasskeyAuth isRegisterPin={!userProfile?.data?.userPIN} setIsAuthenticated={setIsAuthenticated} />
         :
@@ -141,7 +141,7 @@ export default function Index() {
             headerTitleStyle: { fontWeight: 'bold' },
           }}
         >
-          <Stack.Screen name='auth/login' options={{ headerShown: false }} />
+          {/* <Stack.Screen name='auth/login' options={{ headerShown: false }} /> */}
           <Stack.Screen name='tabs' options={{ headerShown: false }} />
           <Stack.Screen name='notabs' options={{ headerShown: false }} />
         </Stack>
