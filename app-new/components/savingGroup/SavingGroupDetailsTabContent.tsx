@@ -69,7 +69,7 @@ const SavingGroupTabContent = ({ activeTab }: { activeTab: string }) => {
             },
             {
               onSuccess: () => {
-                ToastAndroid.showWithGravity("Payment settled successfully.", ToastAndroid.SHORT, ToastAndroid.BOTTOM + 10);
+                ToastAndroid.showWithGravity("Payment settled successfully.", ToastAndroid.SHORT, ToastAndroid.TOP + 10);
                 setSettlingMemberId(member?._id);
                 queryClient.invalidateQueries({
                   queryKey: [savingGroupId, 'savingGroupById'],
@@ -151,7 +151,7 @@ const SavingGroupTabContent = ({ activeTab }: { activeTab: string }) => {
           ToastAndroid.showWithGravity(
             'Expense updated successfully',
             ToastAndroid.SHORT,
-            ToastAndroid.BOTTOM+20
+            ToastAndroid.TOP + 20
           );
         },
         onError: (error: any) => {
@@ -457,16 +457,16 @@ const SavingGroupTabContent = ({ activeTab }: { activeTab: string }) => {
                           balance > 0
                             ? colors.green[500] + '99'
                             : balance < 0
-                            ? colors.red[500] + '99'
-                            : colors.green[500],
+                              ? colors.red[500] + '99'
+                              : colors.green[500],
                         textAlign: 'right',
                       }}
                     >
                       {balance === 0
                         ? 'Settled'
                         : balance < 0
-                        ? `You Owe`
-                        : `Owes You`}
+                          ? `You Owe`
+                          : `Owes You`}
                     </Text>
                     <View
                       style={{

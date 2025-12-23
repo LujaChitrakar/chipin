@@ -19,7 +19,6 @@ import { BorrowRequestCard } from '@/components/friends/BorrowRequestCard';
 
 const FriendDetailPage = () => {
   const queryClient = useQueryClient();
-
   const navigation = useNavigation();
   useEffect(() => {
     navigation?.setOptions?.({ headerShown: false });
@@ -260,7 +259,7 @@ const FriendDetailPage = () => {
               </View>
             </View>
             <LendBorrowButton friendId={friendData?.data?._id} />
-            {borrowRequestsToMe?.data?.map((request: any, index: number) => {
+            {/* {borrowRequestsToMe?.data?.map((request: any, index: number) => {
               return (
                 <BorrowRequestCard
                   key={index}
@@ -268,7 +267,7 @@ const FriendDetailPage = () => {
                   isIncoming={true}
                 />
               );
-            })}
+            })} */}
           </View>
 
           <View

@@ -120,7 +120,7 @@ const AccountPage = () => {
             }
           );
         },
-        onError: () => {},
+        onError: () => { },
       });
     } else {
       updateMyProfile(updatedData, {
@@ -530,7 +530,9 @@ const AccountPage = () => {
 
           <TouchableOpacity
             style={{
+              width: 150,
               flexDirection: 'row',
+              alignSelf: 'center',
               alignItems: 'center',
               justifyContent: 'center',
               paddingVertical: 16,

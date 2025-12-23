@@ -11,7 +11,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import React, { useState, useEffect } from 'react';
-import { Search, X, Mail, UserRoundPlus } from 'lucide-react-native';
+import { Search, X, Mail, UserRoundPlus, BellRing } from 'lucide-react-native';
 import ScreenContainer from '@/components/ScreenContainer';
 import ScreenHeader from '@/components/navigation/ScreenHeader';
 import {
@@ -28,13 +28,21 @@ import LendBorrowButton from '@/components/friends/LendBorrowButtons';
 import Button from '@/components/common/Button';
 import FriendRequestCard from '@/components/friends/FriendRequestCard';
 import FriendCard from '@/components/friends/FriendCard';
+import { useGetBorrowRequestsToMe } from '@/services/api/borrowApi';
+import { BorrowRequestCard } from '@/components/friends/BorrowRequestCard';
 const FriendsPage = () => {
   const queryClient = useQueryClient();
-
+  const { data: borrowRequestsToMe } = useGetBorrowRequestsToMe({
+    //requestor:friendId,
+  })
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddFriendModal, setShowAddFriendModal] = useState(false);
+  const [showFriendNotification, setShowFriendNotification] = useState(false);
+
   const [friendEmail, setFriendEmail] = useState('');
   const [showScanner, setShowScanner] = useState(false);
+
+  const [friendNotificationActiveTab, setFriendNotificationActiveTab] = useState('FriendRequest')
 
   // Pagination state
   const [friendsPage, setFriendsPage] = useState(1);
@@ -151,7 +159,7 @@ const FriendsPage = () => {
         ToastAndroid.showWithGravity(
           'Friend request sent',
           ToastAndroid.SHORT,
-          ToastAndroid.BOTTOM + 20
+          ToastAndroid.TOP + 20
         );
         setShowAddFriendModal(false);
         setFriendEmail('');
@@ -161,7 +169,7 @@ const FriendsPage = () => {
         ToastAndroid.showWithGravity(
           error?.response?.data?.message || 'Failed to send request',
           ToastAndroid.LONG,
-          ToastAndroid.BOTTOM + 20
+          ToastAndroid.TOP + 20
         );
       },
     });
@@ -175,7 +183,23 @@ const FriendsPage = () => {
 
   return (
     <ScreenContainer>
-      <ScreenHeader title='Friends' />
+      <ScreenHeader title='Friends' rightElement={
+        <TouchableOpacity
+          onPress={() => {
+            setShowFriendNotification(true)
+          }}
+          style={{
+            width: 50,
+            height: 50,
+            borderRadius: 50,
+            backgroundColor: colors.cardBackground.DEFAULT,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <BellRing size={24} color={colors.cardBackground.light} />
+        </TouchableOpacity>
+      } />
       <ScrollView
         refreshControl={
           <RefreshControl
@@ -232,7 +256,7 @@ const FriendsPage = () => {
               </View>
             ) : (
               <View style={styles.listContent}>
-                {allRequests.length > 0 && (
+                {/* {allRequests.length > 0 && (
                   <View>
                     <View style={styles.sectionHeader}>
                       <Text style={styles.sectionTitle}>Friend Requests</Text>
@@ -257,7 +281,7 @@ const FriendsPage = () => {
                       </View>
                     )}
                   </View>
-                )}
+                )} */}
 
                 <View>
                   {allFriends.map((item, index) => (
@@ -268,6 +292,7 @@ const FriendsPage = () => {
                       )}
                     </View>
                   ))}
+
                 </View>
 
                 {hasMoreFriends && (
@@ -283,6 +308,140 @@ const FriendsPage = () => {
           </View>
         </View>
       </ScrollView>
+
+
+      {/* Friend Notification Modal */}
+      <Modal
+        visible={showFriendNotification}
+        transparent
+        animationType='fade'
+        onRequestClose={() => setShowFriendNotification(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Friend Notification</Text>
+              <TouchableOpacity
+                onPress={() => setShowFriendNotification(false)}
+                style={styles.closeButton}
+              >
+                <X size={24} color={colors.gray.DEFAULT} />
+              </TouchableOpacity>
+            </View>
+
+            <View
+              style={{
+                flexDirection: 'row',
+                backgroundColor: colors.cardBackground.dark,
+                borderRadius: 12,
+                padding: 8,
+                gap: 4,
+              }}
+            >
+              <TouchableOpacity
+                onPress={() => setFriendNotificationActiveTab('FriendRequest')}
+                style={{
+                  flex: 1,
+                  paddingVertical: 10,
+                  borderRadius: 8,
+                  alignItems: 'center',
+                  backgroundColor:
+                    friendNotificationActiveTab === 'FriendRequest' ? colors.white : 'transparent',
+                }}
+              >
+                <Text
+                  style={{
+                    color:
+                      friendNotificationActiveTab === 'FriendRequest'
+                        ? colors.black
+                        : colors.grayTextColor.DEFAULT,
+                    fontWeight: '600',
+                  }}
+                >
+                  Friend Request
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => setFriendNotificationActiveTab('BorrowRequest')}
+                style={{
+                  flex: 1,
+                  paddingVertical: 10,
+                  borderRadius: 8,
+                  alignItems: 'center',
+                  backgroundColor:
+                    friendNotificationActiveTab === 'BorrowRequest' ? colors.white : 'transparent',
+                }}
+              >
+                <Text
+                  style={{
+                    color:
+                      friendNotificationActiveTab === 'BorrowRequest'
+                        ? colors.black
+                        : colors.grayTextColor.DEFAULT,
+                    fontWeight: '600',
+                  }}
+                >
+                  Borrow Request
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+
+            {friendNotificationActiveTab === "FriendRequest" ? (
+              <View
+
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  width: '100%',
+                  gap: 16,
+                }}>
+
+                <View style={styles.listContent}>
+                  {allRequests.length > 0 && (
+                    <View>
+                      <View style={styles.sectionHeader}>
+                        <Text style={styles.sectionTitle}>Friend Requests</Text>
+                        <Text style={styles.sectionCount}>
+                          {allRequests.length}
+                        </Text>
+                      </View>
+                      {allRequests.map((item) => (
+                        <FriendRequestCard
+                          key={item._id}
+                          friendData={item}
+                          setAllRequests={setAllRequests}
+                        />
+                      ))}
+
+                    </View>
+                  )}
+
+                </View>
+              </View>
+
+            ) : (
+
+              <View>
+
+                {borrowRequestsToMe?.data?.map((request: any, index: number) => {
+                  return (
+                    <BorrowRequestCard
+                      key={index}
+                      request={request}
+                      isIncoming={true}
+                    />
+                  );
+                })}
+              </View>
+            )}
+
+
+          </View>
+        </View>
+      </Modal>
+
 
       <Modal
         visible={showAddFriendModal}
@@ -339,7 +498,7 @@ const FriendsPage = () => {
                       size={20}
                       color={colors.white}
                     />
-                    <Text style={styles.qrButtonText}>Scan QR Code</Text>
+                    <Text style={styles.qrButtonText}>Scan FriendRequest Code</Text>
                   </TouchableOpacity>
                 </View>
 
@@ -367,7 +526,7 @@ const FriendsPage = () => {
         </View>
       </Modal>
 
-      {/* QR Scanner Modal */}
+      {/* FriendRequest Scanner Modal */}
       <Modal
         visible={showScanner}
         transparent
@@ -388,9 +547,9 @@ const FriendsPage = () => {
                 setShowAddFriendModal(true);
               } else {
                 ToastAndroid.showWithGravity(
-                  'No valid email found in QR code',
+                  'No valid email found in FriendRequest code',
                   ToastAndroid.LONG,
-                  ToastAndroid.BOTTOM + 20
+                  ToastAndroid.TOP + 20
                 );
                 setShowScanner(false);
                 setShowAddFriendModal(false);
@@ -509,12 +668,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 16,
+
   },
   modalContainer: {
     backgroundColor: colors.cardBackground.DEFAULT,
     borderRadius: 24,
     width: '100%',
     maxWidth: 400,
+    padding: 10,
+    minHeight: 500
   },
   modalHeader: {
     flexDirection: 'row',

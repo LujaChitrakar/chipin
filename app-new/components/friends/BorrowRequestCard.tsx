@@ -42,7 +42,7 @@ export const BorrowRequestCard = ({
       ToastAndroid.showWithGravity(
         'Wallet not initialized.',
         ToastAndroid.LONG,
-        ToastAndroid.BOTTOM+20
+        ToastAndroid.TOP + 20
       );
       return;
     }
@@ -64,7 +64,7 @@ export const BorrowRequestCard = ({
                 ToastAndroid.showWithGravity(
                   response?.message || 'Borrow request accepted successfully',
                   ToastAndroid.LONG,
-                  ToastAndroid.BOTTOM+20
+                  ToastAndroid.TOP + 20
                 );
                 queryClient.invalidateQueries({
                   queryKey: ['requests-to-me'],
@@ -77,7 +77,7 @@ export const BorrowRequestCard = ({
                 ToastAndroid.showWithGravity(
                   error?.response?.message || 'Borrow request failed to accept',
                   ToastAndroid.LONG,
-                  ToastAndroid.BOTTOM+20
+                  ToastAndroid.TOP + 20
                 );
               },
             }
@@ -93,7 +93,7 @@ export const BorrowRequestCard = ({
         ToastAndroid.showWithGravity(
           response?.message || 'Borrow request denied successfully',
           ToastAndroid.LONG,
-          ToastAndroid.BOTTOM+20
+          ToastAndroid.TOP + 20
         );
         queryClient.invalidateQueries({
           queryKey: ['requests-to-me'],
@@ -106,7 +106,7 @@ export const BorrowRequestCard = ({
         ToastAndroid.showWithGravity(
           error?.response?.message || 'Borrow request failed to accept',
           ToastAndroid.LONG,
-          ToastAndroid.BOTTOM+20
+          ToastAndroid.TOP + 20
         );
       },
     });

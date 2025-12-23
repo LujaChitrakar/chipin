@@ -55,7 +55,7 @@ const JoinGroupModal = ({
         console.log('JOINING GROUP ERROR:::', error?.response?.data);
         ToastAndroid.showWithGravity(
           error?.response?.data?.message || 'Failed to join',
-          ToastAndroid.BOTTOM+20,
+          ToastAndroid.TOP + 20,
           ToastAndroid.LONG
         );
       },

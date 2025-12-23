@@ -1,8 +1,9 @@
-import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, ActivityIndicator, ScrollView, RefreshControl } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import colors from '@/assets/colors';
 import GroupCard from './GroupCard';
 import { useRouter } from 'expo-router';
+import { useQueryClient } from '@tanstack/react-query';
 
 const GroupTabs = ({
   myGroups,
@@ -16,11 +17,16 @@ const GroupTabs = ({
   myGroupsLoading: boolean;
 }) => {
   const router = useRouter();
+  const queryClient = useQueryClient();
+
 
   const [activeTab, setActiveTab] = useState<'active' | 'settled'>('active');
 
   const [activeGroups, setActiveGroups] = useState<any[]>([]);
   const [settledGroups, setSettledGroups] = useState<any[]>([]);
+
+
+
 
   useEffect(() => {
     const groupsList = myGroups?.data || [];
@@ -97,7 +103,7 @@ const GroupTabs = ({
       ) : (
         <>
           {(activeTab === 'active' && activeGroups.length === 0) ||
-          (activeTab === 'settled' && settledGroups.length === 0) ? (
+            (activeTab === 'settled' && settledGroups.length === 0) ? (
             <View
               style={{
                 padding: 24,
@@ -116,21 +122,49 @@ const GroupTabs = ({
               style={{
                 marginTop: 20,
                 display: 'flex',
+                height: 200,
                 flexDirection: 'column',
-                gap: 20,
+                padding: 5
               }}
             >
-              {(activeTab === 'active' ? activeGroups : settledGroups).map(
-                (group: any, index: number) => (
-                  <GroupCard
-                    onTap={() => {
-                      router.push(`/tabs/groups/${group._id}`);
+
+              <ScrollView
+
+                style={{
+                  // flex: 1,
+                }}
+
+                contentContainerStyle={{
+                  gap: 10,
+                }}
+
+                showsVerticalScrollIndicator={false}
+
+                refreshControl={
+                  <RefreshControl
+                    onRefresh={() => {
+                      queryClient.invalidateQueries({
+                        queryKey: ['my-groups'],
+                      });
+                      queryClient.invalidateQueries({
+                        queryKey: ['wallet-balance'],
+                      });
                     }}
-                    key={index}
-                    group={group}
-                  />
-                )
-              )}
+                    refreshing={myGroupsLoading} />
+                }
+              >
+                {(activeTab === 'active' ? activeGroups : settledGroups).map(
+                  (group: any, index: number) => (
+                    <GroupCard
+                      onTap={() => {
+                        router.push(`/tabs/groups/${group._id}`);
+                      }}
+                      key={index}
+                      group={group}
+                    />
+                  )
+                )}
+              </ScrollView>
             </View>
           )}
         </>

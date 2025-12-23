@@ -79,13 +79,12 @@ const BorrowLendModal = ({
     sendBorrowRequest(borrowData, {
       onSuccess: (response: any) => {
         ToastAndroid.showWithGravity(
-          `Borrow request of ${amount} sent to ${
-            selectedFriend?.fullname ||
-            selectedFriend?.username ||
-            selectedFriend?.email
+          `Borrow request of ${amount} sent to ${selectedFriend?.fullname ||
+          selectedFriend?.username ||
+          selectedFriend?.email
           }`,
           ToastAndroid.LONG,
-          ToastAndroid.BOTTOM+20
+          ToastAndroid.TOP + 20
         );
         setAmount('');
         setPurpose('');
@@ -95,7 +94,7 @@ const BorrowLendModal = ({
         ToastAndroid.showWithGravity(
           `${error?.response?.message || 'Failed to send borrow request'}`,
           ToastAndroid.LONG,
-          ToastAndroid.BOTTOM+20
+          ToastAndroid.TOP + 20
         );
       },
     });
@@ -110,7 +109,7 @@ const BorrowLendModal = ({
       ToastAndroid.showWithGravity(
         'Wallet not initialized. Please wait few seconds',
         ToastAndroid.LONG,
-        ToastAndroid.BOTTOM+20
+        ToastAndroid.TOP + 20
       );
       return;
     }
@@ -134,13 +133,12 @@ const BorrowLendModal = ({
             reason,
           });
           ToastAndroid.showWithGravity(
-            `${amount} was sent to ${
-              selectedFriend?.fullname ||
-              selectedFriend?.username ||
-              selectedFriend?.email
+            `${amount} was sent to ${selectedFriend?.fullname ||
+            selectedFriend?.username ||
+            selectedFriend?.email
             }`,
             ToastAndroid.LONG,
-            ToastAndroid.BOTTOM+20
+            ToastAndroid.TOP + 20
           );
           setAmount('');
           setPurpose('');
@@ -375,6 +373,20 @@ const BorrowLendModal = ({
             <TouchableOpacity
               style={{
                 flex: 1,
+                backgroundColor: colors.cardBackground.light,
+                paddingVertical: 12,
+                borderRadius: 50,
+                alignItems: 'center',
+              }}
+              onPress={() => setVisible(false)}
+            >
+              <Text style={{ color: colors.white, fontWeight: '600' }}>
+                Cancel
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={{
+                flex: 1,
                 backgroundColor:
                   !selectedFriend || !amount
                     ? colors.white + '99'
@@ -395,24 +407,11 @@ const BorrowLendModal = ({
                 <ActivityIndicator />
               ) : (
                 <Text style={{ color: colors.black, fontWeight: '600' }}>
-                  {action === 'BORROW' ? 'Request Borrow' : 'Send'}
+                  {action === 'BORROW' ? 'Request' : 'Send'}
                 </Text>
               )}
             </TouchableOpacity>
-            <TouchableOpacity
-              style={{
-                flex: 1,
-                backgroundColor: colors.cardBackground.light,
-                paddingVertical: 12,
-                borderRadius: 50,
-                alignItems: 'center',
-              }}
-              onPress={() => setVisible(false)}
-            >
-              <Text style={{ color: colors.white, fontWeight: '600' }}>
-                Cancel
-              </Text>
-            </TouchableOpacity>
+
           </View>
         </View>
       </View>

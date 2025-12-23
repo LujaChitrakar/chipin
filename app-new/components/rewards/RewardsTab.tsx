@@ -47,7 +47,7 @@ const RewardsTab = () => {
       ToastAndroid.showWithGravity(
         'Not enough points to redeem now.',
         ToastAndroid.LONG,
-        ToastAndroid.BOTTOM+20
+        ToastAndroid.TOP + 20
       );
       return;
     }
@@ -58,7 +58,7 @@ const RewardsTab = () => {
           ToastAndroid.showWithGravity(
             response?.message || 'Successfully redeemed!',
             ToastAndroid.LONG,
-            ToastAndroid.BOTTOM+20
+            ToastAndroid.TOP + 20
           );
           queryClient.invalidateQueries({
             queryKey: ['wallet-balance'],
@@ -72,7 +72,7 @@ const RewardsTab = () => {
         ToastAndroid.showWithGravity(
           error?.response?.message || 'Failed to redeem. Try again later!',
           ToastAndroid.LONG,
-          ToastAndroid.BOTTOM+20
+          ToastAndroid.TOP + 20
         );
       },
     });

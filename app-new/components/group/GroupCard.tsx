@@ -86,8 +86,8 @@ const GroupCard = ({ group, onTap }: { group: any; onTap: () => void }) => {
             {netBalance < 0
               ? 'You Owe'
               : netBalance > 0
-              ? 'You’re Owed'
-              : 'Settled up'}
+                ? 'You’re Owed'
+                : 'Settled up'}
           </Text>
           <View
             style={{

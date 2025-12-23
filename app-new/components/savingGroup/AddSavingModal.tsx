@@ -64,7 +64,7 @@ const AddSavingModal: React.FC<AddSavingModalProps> = ({
       ToastAndroid.showWithGravity(
         'No wallet connected.',
         ToastAndroid.LONG,
-        ToastAndroid.BOTTOM+20
+        ToastAndroid.TOP + 20
       );
       return;
     }
@@ -97,7 +97,7 @@ const AddSavingModal: React.FC<AddSavingModalProps> = ({
                 ToastAndroid.showWithGravity(
                   'Saving added successfully.',
                   ToastAndroid.LONG,
-                  ToastAndroid.BOTTOM+20
+                  ToastAndroid.TOP + 20
                 );
                 queryClient.invalidateQueries({
                   queryKey: ['wallet-balance'],
@@ -110,7 +110,7 @@ const AddSavingModal: React.FC<AddSavingModalProps> = ({
                 ToastAndroid.showWithGravity(
                   error?.response?.data?.message || 'Failed to add saving.',
                   ToastAndroid.LONG,
-                  ToastAndroid.BOTTOM+20
+                  ToastAndroid.TOP + 20
                 );
               },
             }
@@ -120,7 +120,7 @@ const AddSavingModal: React.FC<AddSavingModalProps> = ({
           ToastAndroid.showWithGravity(
             error?.message || 'Failed to send USDC.',
             ToastAndroid.LONG,
-            ToastAndroid.BOTTOM+20
+            ToastAndroid.TOP + 20
           );
         },
       }
@@ -258,8 +258,8 @@ const AddSavingModal: React.FC<AddSavingModalProps> = ({
                 ...styles.confirmButton,
                 backgroundColor:
                   amount.length === 0 ||
-                  isNaN(Number(amount)) ||
-                  addingSavingGroupTransaction
+                    isNaN(Number(amount)) ||
+                    addingSavingGroupTransaction
                     ? colors.white + '88'
                     : colors.white,
               }}
